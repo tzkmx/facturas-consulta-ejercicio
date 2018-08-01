@@ -38,6 +38,25 @@ class QueriesRegistry
         $answer = $result['answer'];
         if ($answer === 'excess') {
             $this->exceededAnswerInRangeThenBuildNewQueryRanges($result);
+            return;
+        }
+        $strippedRange = $this->stripOldRange($result);
+
+        $this->rangeQueries = $strippedRange + [$result];
+
+        $this->updateStatus();
+    }
+
+    protected function updateStatus()
+    {
+        $succededQueries = array_filter($this->rangeQueries, function($range) {
+            return $range['answer'];
+        });
+        $allQueriesCount = count($this->rangeQueries);
+        $succededQueriesCount = count($succededQueries);
+        
+        if ($allQueriesCount > 0 && ($allQueriesCount === $succededQueriesCount)) {
+            $this->completed = true;
         }
     }
 
@@ -58,9 +77,7 @@ class QueriesRegistry
     {
         $newRangesByExceededSplittedInHalf = $this->getTwoRangesSplittingOneByHalf($rangeResult);
 
-        $oldRangesWithoutExceeded = array_filter($this->rangeQueries, function($range) use ($rangeResult) {
-            return $range['start'] !== $rangeResult['start'] && $range['finish'] !== $rangeResult['finish'];
-        });
+        $oldRangesWithoutExceeded = $this->stripOldRange($rangeResult);
         
         $this->rangeQueries = $oldRangesWithoutExceeded + $newRangesByExceededSplittedInHalf;
     }
@@ -89,6 +106,13 @@ class QueriesRegistry
         ];
 
         return [ $newRangeFirstHalf, $newRangeLastHalf ];
+    }
+
+    protected function stripOldRange($rangeToStrip)
+    {
+        return array_filter($this->rangeQueries, function($range) use ($rangeToStrip) {
+            return $range['start'] !== $rangeToStrip['start'] && $range['finish'] !== $rangeToStrip['finish'];
+        });
     }
 
     protected function getIsoDateForDayOfYear(int $day, int $year = 0)

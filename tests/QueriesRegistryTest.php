@@ -64,4 +64,29 @@ class QueriesRegistryTest extends TestCase
 
         $this->assertEquals($rangesExpected, $registry->getRanges());
     }
+
+    public function testCompletedRegistryOnFirstQuerySuccess()
+    {
+        $registry = new QueriesRegistry(2017, 'client');
+
+        $rangeQueryResult = [
+            'start' => '2017-01-01',
+            'finish' => '2017-12-31',
+            'answer' => '99',
+        ];
+
+        $registry->enterRangeQueryResult($rangeQueryResult);
+
+        $statusExpected = ['completed' => true];
+        $rangesExpected = [
+            [
+                'start' => '2017-01-01',
+                'finish' => '2017-12-31',
+                'answer' => '99',
+            ],
+        ];
+        $this->assertEquals($statusExpected, $registry->getStatus());
+
+        $this->assertEquals($rangesExpected, $registry->getRanges());
+    }
 }

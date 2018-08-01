@@ -30,6 +30,9 @@ class DatesRangesBuilder
 
     protected function getSplitRange($oldRangeToSplit)
     {
+        if ($oldRangeToSplit['start'] === $oldRangeToSplit['finish']) {
+            throw new \RangeException('A day range cannot be further split');
+        }
         $dayNumberStart = $this->getDayNumberFromIsoDate($oldRangeToSplit['start']);
         $dayNumberFinish = $this->getDayNumberFromIsoDate($oldRangeToSplit['finish']);
 

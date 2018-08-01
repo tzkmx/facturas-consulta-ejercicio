@@ -104,4 +104,15 @@ class DatesRangesBuilderTest extends TestCase
             ],
         ];
     }
+
+    public function testExceptionOnStartSameAsFinishDate()
+    {
+        $builder = new DatesRangesBuilder(2017);
+        $this->expectException(\RangeException::class);
+
+        $builder->getNewRange([
+            'start' => '2017-01-01',
+            'finish' => '2017-01-01'
+        ]);
+    }
 }

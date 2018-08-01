@@ -10,15 +10,19 @@ class QueriesRegistry
 
     protected $completed;
 
-    protected $year;
+    protected $rangesBuilder;
 
-    public function __construct(int $year, string $clientId)
+    public function __construct(string $clientId, DatesRangesBuilder $rangesBuilder)
     {
         $this->clientId = $clientId;
 
         $this->completed = false;
 
-        $this->buildInitialRange($year);
+        $this->rangesBuilder = $rangesBuilder;
+
+        $initialQueryRange = $this->rangesBuilder->getNewRange();
+        
+        $this->rangeQueries = $this->getRegistryRangesWithAnswerFalse($initialQueryRange);
     }
 
     public function getStatus()
@@ -37,7 +41,10 @@ class QueriesRegistry
     {
         $answer = $result['answer'];
         if ($answer === 'excess') {
-            $this->exceededAnswerInRangeThenBuildNewQueryRanges($result);
+            $newRanges = $this->rangesBuilder->getNewRange($result);
+            $strippedRange = $this->stripOldRange($result);
+            $newRegistryEntries = $this->getRegistryRangesWithAnswerFalse($newRanges);
+            $this->rangeQueries = $strippedRange + $newRegistryEntries;
             return;
         }
         $strippedRange = $this->stripOldRange($result);
@@ -60,54 +67,6 @@ class QueriesRegistry
         }
     }
 
-    protected function buildInitialRange(int $year)
-    {
-        $this->year = $year;
-
-        $this->rangeQueries = [
-            [
-              'start' => "{$year}-01-01",
-              'finish' => "{$year}-12-31",
-              'answer' => false,
-            ]
-        ];
-    }
-
-    protected function exceededAnswerInRangeThenBuildNewQueryRanges($rangeResult)
-    {
-        $newRangesByExceededSplittedInHalf = $this->getTwoRangesSplittingOneByHalf($rangeResult);
-
-        $oldRangesWithoutExceeded = $this->stripOldRange($rangeResult);
-        
-        $this->rangeQueries = $oldRangesWithoutExceeded + $newRangesByExceededSplittedInHalf;
-    }
-
-    protected function getTwoRangesSplittingOneByHalf($bigRange)
-    {
-        $dayNumberStart = $this->getDayNumberFromIsoDate($bigRange['start']);
-        $dayNumberFinish = $this->getDayNumberFromIsoDate($bigRange['finish']);
-
-        $diff = $dayNumberFinish - $dayNumberStart;
-
-        $halfDiff = (($diff % 2) === 0) ? ($diff / 2) : (intdiv($diff, 2) + 1);
-
-        $dayNumberFirstHalfFinish = $dayNumberStart + $halfDiff;
-        $dayNumberLastHalfStart = $dayNumberFirstHalfFinish + 1;
-
-        $newRangeFirstHalf = [
-            'start' => $bigRange['start'],
-            'finish' => $this->getIsoDateForDayOfYear($dayNumberFirstHalfFinish),
-            'answer' => false,
-        ];
-        $newRangeLastHalf = [
-            'start' => $this->getIsoDateForDayOfYear($dayNumberLastHalfStart),
-            'finish' => $bigRange['finish'],
-            'answer' => false,
-        ];
-
-        return [ $newRangeFirstHalf, $newRangeLastHalf ];
-    }
-
     protected function stripOldRange($rangeToStrip)
     {
         return array_filter($this->rangeQueries, function($range) use ($rangeToStrip) {
@@ -115,16 +74,11 @@ class QueriesRegistry
         });
     }
 
-    protected function getIsoDateForDayOfYear(int $day, int $year = 0)
+    protected function getRegistryRangesWithAnswerFalse($ranges)
     {
-        $theYear = $year === 0 ? $this->year : $year;
-        $date = \DateTime::createFromFormat('Y z', "{$theYear} {$day}");
-        return $date->format('Y-m-d');
-    }
-
-    protected function getDayNumberFromIsoDate($isoDate)
-    {
-        $date = \DateTime::createFromFormat('Y-m-d', $isoDate);
-        return intval($date->format('z'));
+        return array_map(function($range) {
+            $range['answer'] = false;
+            return $range;
+        }, $ranges);
     }
 }

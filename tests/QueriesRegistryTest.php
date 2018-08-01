@@ -1,16 +1,18 @@
 <?php
 
+namespace Jefrancomix\ConsultaFacturas\Test;
+
 use PHPUnit\Framework\TestCase;
 
-require __DIR__ . '/../src/QueriesRegistry.php';
-
 use Jefrancomix\ConsultaFacturas\QueriesRegistry;
+use Jefrancomix\ConsultaFacturas\DatesRangesBuilder;
 
 class QueriesRegistryTest extends TestCase
 {
     public function testJustBuiltRegistryIsCompletedFalse()
     {
-        $registry = new QueriesRegistry(2017, 'client');
+        $rangesBuilder = new DatesRangesBuilder(2017);
+        $registry = new QueriesRegistry('client', $rangesBuilder);
 
         $justBuiltStatus = [
             'completed' => false,
@@ -19,24 +21,10 @@ class QueriesRegistryTest extends TestCase
         $this->assertEquals($justBuiltStatus, $registry->getStatus());
     }
 
-    public function testJustBuiltRegistryCoversWholeYear()
-    {
-        $registry = new QueriesRegistry(2017, 'client');
-
-        $rangesExpected = [
-            [
-                'start' => '2017-01-01',
-                'finish' => '2017-12-31',
-                'answer' => false,
-            ],
-        ];
-
-        $this->assertEquals($rangesExpected, $registry->getRanges());
-    }
-
     public function testExceededAmountOfBillsInRange()
     {
-        $registry = new QueriesRegistry(2017, 'client');
+        $rangesBuilder = new DatesRangesBuilder(2017);
+        $registry = new QueriesRegistry('client', $rangesBuilder);
 
         $rangeQueryResult = [
             'start' => '2017-01-01',
@@ -67,7 +55,8 @@ class QueriesRegistryTest extends TestCase
 
     public function testCompletedRegistryOnFirstQuerySuccess()
     {
-        $registry = new QueriesRegistry(2017, 'client');
+        $rangesBuilder = new DatesRangesBuilder(2017);
+        $registry = new QueriesRegistry('client', $rangesBuilder);
 
         $rangeQueryResult = [
             'start' => '2017-01-01',

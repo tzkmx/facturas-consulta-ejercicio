@@ -33,11 +33,11 @@ class DatesRangesBuilder
         $dayNumberStart = $this->getDayNumberFromIsoDate($oldRangeToSplit['start']);
         $dayNumberFinish = $this->getDayNumberFromIsoDate($oldRangeToSplit['finish']);
 
-        $diff = $dayNumberFinish - $dayNumberStart;
+        $diff = ($dayNumberFinish - $dayNumberStart) + 1;
 
         $halfDiff = (($diff % 2) === 0) ? ($diff / 2) : (intdiv($diff, 2) + 1);
 
-        $dayNumberFirstHalfFinish = $dayNumberStart + $halfDiff;
+        $dayNumberFirstHalfFinish = ($dayNumberStart + $halfDiff) - 1;
         $dayNumberLastHalfStart = $dayNumberFirstHalfFinish + 1;
 
         $newRangeFirstHalf = [

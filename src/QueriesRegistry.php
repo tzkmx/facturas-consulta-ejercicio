@@ -45,28 +45,19 @@ class QueriesRegistry
     {
         $this->year = $year;
 
-        $isLeapYear = ($year % 4 === 0) && (
-          ($year % 100 !== 0) || ($year % 400 === 0)
-        );
-
-        $start = "{$year}-01-01";
-
-        $howManyDaysHasYear = ($isLeapYear ? 366 : 365) - 1;
-
-        $finish = $this->getIsoDateForDayOfYear($howManyDaysHasYear);
-
-        $answer = false;
-
-        $this->rangeQueries = [compact('start', 'finish', 'answer')];
+        $this->rangeQueries = [
+            [
+              'start' => "{$year}-01-01",
+              'finish' => "{$year}-12-31",
+              'answer' => false,
+            ]
+        ];
     }
 
     protected function exceededAnswerInRangeThenBuildNewQueryRanges($rangeResult)
     {
-        $exceededStart = \DateTime::createFromFormat('Y-m-d', $rangeResult['start']);
-        $exceededFinish = \DateTime::createFromFormat('Y-m-d', $rangeResult['finish']);
-
-        $dayNumberStart = $exceededStart->format('z');
-        $dayNumberFinish = $exceededFinish->format('z');
+        $dayNumberStart = $this->getDayNumberFromIsoDate($rangeResult['start']);
+        $dayNumberFinish = $this->getDayNumberFromIsoDate($rangeResult['finish']);
 
         $diff = $dayNumberFinish - $dayNumberStart;
 
@@ -100,5 +91,11 @@ class QueriesRegistry
         $theYear = $year === 0 ? $this->year : $year;
         $date = \DateTime::createFromFormat('Y z', "{$theYear} {$day}");
         return $date->format('Y-m-d');
+    }
+
+    protected function getDayNumberFromIsoDate($isoDate)
+    {
+        $date = \DateTime::createFromFormat('Y-m-d', $isoDate);
+        return intval($date->format('z'));
     }
 }

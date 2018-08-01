@@ -19,8 +19,6 @@ class QueriesRegistry
         $this->completed = false;
 
         $this->buildInitialRange($year);
-
-        $this->year = $year;
     }
 
     public function getStatus()
@@ -45,6 +43,8 @@ class QueriesRegistry
 
     protected function buildInitialRange(int $year)
     {
+        $this->year = $year;
+
         $isLeapYear = ($year % 4 === 0) && (
           ($year % 100 !== 0) || ($year % 400 === 0)
         );
@@ -52,9 +52,8 @@ class QueriesRegistry
         $start = "{$year}-01-01";
 
         $howManyDaysHasYear = ($isLeapYear ? 366 : 365) - 1;
-        $endDate = \DateTime::createFromFormat('Y z', "{$year} {$howManyDaysHasYear}");
 
-        $finish = $endDate->format('Y-m-d');
+        $finish = $this->getIsoDateForDayOfYear($howManyDaysHasYear);
 
         $answer = false;
 
@@ -76,16 +75,13 @@ class QueriesRegistry
         $dayNumberFirstHalfFinish = $dayNumberStart + $halfDiff;
         $dayNumberLastHalfStart = $dayNumberFirstHalfFinish + 1;
 
-        $newRangeFirstHalfFinish = \DateTime::createFromFormat('Y z', "{$this->year} {$dayNumberFirstHalfFinish}");
-        $newRangeLastHalfStart = \DateTime::createFromFormat('Y z', "{$this->year} {$dayNumberLastHalfStart}");
-
         $newRangeFirstHalf = [
             'start' => $rangeResult['start'],
-            'finish' => $newRangeFirstHalfFinish->format('Y-m-d'),
+            'finish' => $this->getIsoDateForDayOfYear($dayNumberFirstHalfFinish),
             'answer' => false,
         ];
         $newRangeLastHalf = [
-            'start' => $newRangeLastHalfStart->format('Y-m-d'),
+            'start' => $this->getIsoDateForDayOfYear($dayNumberLastHalfStart),
             'finish' => $rangeResult['finish'],
             'answer' => false,
         ];
@@ -97,5 +93,12 @@ class QueriesRegistry
         array_push($newRangesWithoutExceeded, $newRangeFirstHalf, $newRangeLastHalf);
         
         $this->rangeQueries = $newRangesWithoutExceeded;
+    }
+
+    protected function getIsoDateForDayOfYear(int $day, int $year = 0)
+    {
+        $theYear = $year === 0 ? $this->year : $year;
+        $date = \DateTime::createFromFormat('Y z', "{$theYear} {$day}");
+        return $date->format('Y-m-d');
     }
 }

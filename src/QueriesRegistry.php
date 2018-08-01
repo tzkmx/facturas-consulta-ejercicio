@@ -41,17 +41,32 @@ class QueriesRegistry
     {
         $answer = $result['answer'];
         if ($answer === 'excess') {
-            $newRanges = $this->rangesBuilder->getNewRange($result);
-            $strippedRange = $this->stripOldRange($result);
-            $newRegistryEntries = $this->getRegistryRangesWithAnswerFalse($newRanges);
-            $this->rangeQueries = $strippedRange + $newRegistryEntries;
+            $this->substituteExceededRangeWithNewRanges($result);
             return;
         }
-        $strippedRange = $this->stripOldRange($result);
+        $this->registerAnswerForRange($result);
+    }
 
-        $this->rangeQueries = $strippedRange + [$result];
+    protected function registerAnswerForRange($result)
+    {
+        array_walk($this->rangeQueries, function(&$range, $_, $result) {
+            if ($range['start'] === $result['start'] && $range['finish'] === $result['finish']) {
+              $range['answer'] = $result['answer'];
+            }
+        }, $result);
 
         $this->updateStatus();
+    }
+
+    protected function substituteExceededRangeWithNewRanges($oldRange)
+    {
+        $filteredRange = $this->withoutOldRange($oldRange);
+        
+        $newRanges = $this->rangesBuilder->getNewRange($oldRange);
+        
+        $newRegistryEntries = $this->getRegistryRangesWithAnswerFalse($newRanges);
+        
+        $this->rangeQueries = $filteredRange + $newRegistryEntries;
     }
 
     protected function updateStatus()
@@ -67,7 +82,7 @@ class QueriesRegistry
         }
     }
 
-    protected function stripOldRange($rangeToStrip)
+    protected function withoutOldRange($rangeToStrip)
     {
         return array_filter($this->rangeQueries, function($range) use ($rangeToStrip) {
             return $range['start'] !== $rangeToStrip['start'] && $range['finish'] !== $rangeToStrip['finish'];

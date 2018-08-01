@@ -56,8 +56,19 @@ class QueriesRegistry
 
     protected function exceededAnswerInRangeThenBuildNewQueryRanges($rangeResult)
     {
-        $dayNumberStart = $this->getDayNumberFromIsoDate($rangeResult['start']);
-        $dayNumberFinish = $this->getDayNumberFromIsoDate($rangeResult['finish']);
+        $newRangesByExceededSplittedInHalf = $this->getTwoRangesSplittingOneByHalf($rangeResult);
+
+        $oldRangesWithoutExceeded = array_filter($this->rangeQueries, function($range) use ($rangeResult) {
+            return $range['start'] !== $rangeResult['start'] && $range['finish'] !== $rangeResult['finish'];
+        });
+        
+        $this->rangeQueries = $oldRangesWithoutExceeded + $newRangesByExceededSplittedInHalf;
+    }
+
+    protected function getTwoRangesSplittingOneByHalf($bigRange)
+    {
+        $dayNumberStart = $this->getDayNumberFromIsoDate($bigRange['start']);
+        $dayNumberFinish = $this->getDayNumberFromIsoDate($bigRange['finish']);
 
         $diff = $dayNumberFinish - $dayNumberStart;
 
@@ -67,23 +78,17 @@ class QueriesRegistry
         $dayNumberLastHalfStart = $dayNumberFirstHalfFinish + 1;
 
         $newRangeFirstHalf = [
-            'start' => $rangeResult['start'],
+            'start' => $bigRange['start'],
             'finish' => $this->getIsoDateForDayOfYear($dayNumberFirstHalfFinish),
             'answer' => false,
         ];
         $newRangeLastHalf = [
             'start' => $this->getIsoDateForDayOfYear($dayNumberLastHalfStart),
-            'finish' => $rangeResult['finish'],
+            'finish' => $bigRange['finish'],
             'answer' => false,
         ];
 
-        $newRangesWithoutExceeded = array_filter($this->rangeQueries, function($range) use ($rangeResult) {
-            return $range['start'] !== $rangeResult['start'] && $range['finish'] !== $rangeResult['finish'];
-        });
-
-        array_push($newRangesWithoutExceeded, $newRangeFirstHalf, $newRangeLastHalf);
-        
-        $this->rangeQueries = $newRangesWithoutExceeded;
+        return [ $newRangeFirstHalf, $newRangeLastHalf ];
     }
 
     protected function getIsoDateForDayOfYear(int $day, int $year = 0)

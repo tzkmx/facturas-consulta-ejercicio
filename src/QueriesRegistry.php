@@ -49,9 +49,9 @@ class QueriesRegistry
 
     protected function registerAnswerForRange($result)
     {
-        array_walk($this->rangeQueries, function(&$range, $_, $result) {
+        array_walk($this->rangeQueries, function (&$range, $_, $result) {
             if ($range['start'] === $result['start'] && $range['finish'] === $result['finish']) {
-              $range['answer'] = $result['answer'];
+                $range['answer'] = $result['answer'];
             }
         }, $result);
 
@@ -71,7 +71,7 @@ class QueriesRegistry
 
     protected function updateStatus()
     {
-        $succededQueries = array_filter($this->rangeQueries, function($range) {
+        $succededQueries = array_filter($this->rangeQueries, function ($range) {
             return $range['answer'];
         });
         $allQueriesCount = count($this->rangeQueries);
@@ -84,14 +84,14 @@ class QueriesRegistry
 
     protected function withoutOldRange($rangeToStrip)
     {
-        return array_filter($this->rangeQueries, function($range) use ($rangeToStrip) {
+        return array_filter($this->rangeQueries, function ($range) use ($rangeToStrip) {
             return $range['start'] !== $rangeToStrip['start'] && $range['finish'] !== $rangeToStrip['finish'];
         });
     }
 
     protected function getRegistryRangesWithAnswerFalse($ranges)
     {
-        return array_map(function($range) {
+        return array_map(function ($range) {
             $range['answer'] = false;
             return $range;
         }, $ranges);

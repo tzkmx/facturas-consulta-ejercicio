@@ -62,7 +62,7 @@ class FunctionsTest extends TestCase
             [
                 '2017-01-31',
                 '2017-01-01',
-                '/inicio.+debe ser mayor que.+final.' .
+                '/inicio.+debe ser menor que.+final.' .
                 ' Recibí: 2017-01-31 => 2017-01-01/'
             ]
         ];

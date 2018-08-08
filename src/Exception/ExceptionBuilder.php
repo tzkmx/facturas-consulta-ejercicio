@@ -2,9 +2,9 @@
 
 namespace Jefrancomix\ConsultaFacturas\Exception;
 
-class ExceptionBuilder
+trait ExceptionBuilder
 {
-    public static function get(string $type, string $errorString, array $errorData)
+    public static function getException(string $type, string $errorString, array $errorData)
     {
         $errorMsg = sprintf($errorString . ' Recibí: %s', implode(' => ', $errorData));
         if ($type === 'DateRange') {

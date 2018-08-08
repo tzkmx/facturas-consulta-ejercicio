@@ -6,6 +6,8 @@ use Jefrancomix\ConsultaFacturas\Exception\ExceptionBuilder;
 
 class Functions
 {
+    use ExceptionBuilder;
+
     public static function getDateFromDayOfYear(int $day, int $year)
     {
         $date = \DateTime::createFromFormat('Y z', "{$year} {$day}");
@@ -18,20 +20,25 @@ class Functions
     }
     public static function getNumberOfDaysInRange(string $start, string $finish)
     {
-        list($startYear, , ) = explode('-', $start);
-        list($finishYear, , )  = explode('-', $finish);
-        if ($startYear !== $finishYear) {
-            $error = 'Esta función solo debe ser usada para calcular rangos del mismo año.';
-            throw ExceptionBuilder::get('DateRange', $error, func_get_args());
-        }
+        assert(self::getYearOf($start) === self::getYearOf($finish),
+            self::getException('DateRange',
+                'Esta función solo debe ser usada para calcular rangos del mismo año.',
+                func_get_args()));
 
-        $startDayNumber = Functions::getDayOfYearFromDate($start);
-        $finishDayNumber = Functions::getDayOfYearFromDate($finish);
-        if ($startDayNumber >= $finishDayNumber) {
-            $error = 'La fecha de inicio debe ser mayor que la fecha final.';
-            throw ExceptionBuilder::get('DateRange', $error, func_get_args());
-        }
+        $startDayNumber = self::getDayOfYearFromDate($start);
+        $finishDayNumber = self::getDayOfYearFromDate($finish);
+
+        assert($startDayNumber < $finishDayNumber,
+            self::getException('DateRange',
+                'La fecha de inicio debe ser menor que la fecha final.',
+                func_get_args()));
 
         return ($finishDayNumber - $startDayNumber) + 1;
+    }
+
+    protected static function getYearOf(string $date): string
+    {
+        list($year, , ) = explode('-', $date);
+        return $year;
     }
 }

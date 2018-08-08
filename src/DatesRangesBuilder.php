@@ -2,6 +2,8 @@
 
 namespace Jefrancomix\ConsultaFacturas;
 
+use Jefrancomix\ConsultaFacturas\Dates\Functions;
+
 class DatesRangesBuilder
 {
     protected $year;
@@ -33,8 +35,8 @@ class DatesRangesBuilder
         if ($oldRangeToSplit['start'] === $oldRangeToSplit['finish']) {
             throw new \RangeException('A day range cannot be further split');
         }
-        $dayNumberStart = $this->getDayNumberFromIsoDate($oldRangeToSplit['start']);
-        $dayNumberFinish = $this->getDayNumberFromIsoDate($oldRangeToSplit['finish']);
+        $dayNumberStart = Functions::getDayOfYearFromDate($oldRangeToSplit['start']);
+        $dayNumberFinish = Functions::getDayOfYearFromDate($oldRangeToSplit['finish']);
 
         $diff = ($dayNumberFinish - $dayNumberStart) + 1;
 
@@ -45,26 +47,13 @@ class DatesRangesBuilder
 
         $newRangeFirstHalf = [
             'start' => $oldRangeToSplit['start'],
-            'finish' => $this->getIsoDateForDayOfYear($dayNumberFirstHalfFinish),
+            'finish' => Functions::getDateFromDayOfYear($dayNumberFirstHalfFinish, $this->year),
         ];
         $newRangeLastHalf = [
-            'start' => $this->getIsoDateForDayOfYear($dayNumberLastHalfStart),
+            'start' => Functions::getDateFromDayOfYear($dayNumberLastHalfStart, $this->year),
             'finish' => $oldRangeToSplit['finish'],
         ];
 
         return [ $newRangeFirstHalf, $newRangeLastHalf ];
-    }
-
-    protected function getIsoDateForDayOfYear(int $day, int $year = 0)
-    {
-        $theYear = $year === 0 ? $this->year : $year;
-        $date = \DateTime::createFromFormat('Y z', "{$theYear} {$day}");
-        return $date->format('Y-m-d');
-    }
-
-    protected function getDayNumberFromIsoDate($isoDate)
-    {
-        $date = \DateTime::createFromFormat('Y-m-d', $isoDate);
-        return intval($date->format('z'));
     }
 }

@@ -13,7 +13,7 @@ class PipelineHandler implements HandlerInterface
     public function __construct(
         AddInitialRangeToRequest $addInitialRange,
         PendingQueriesHandler $pendingQueriesHandler,
-        SumBillsIssuedHandler $sumIssuedBillsHandler
+        SumIssuedBillsHandler $sumIssuedBillsHandler
     ) {
         $this->addInitialRange = $addInitialRange;
         $this->pendingQueriesHandler = $pendingQueriesHandler;

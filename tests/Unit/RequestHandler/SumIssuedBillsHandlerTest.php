@@ -2,9 +2,8 @@
 
 namespace Unit\RequestHandler;
 
-use Jefrancomix\ConsultaFacturas\RequestHandler\SumBillsIssuedHandler;
+use Jefrancomix\ConsultaFacturas\RequestHandler\SumIssuedBillsHandler;
 use PHPUnit\Framework\TestCase;
-
 
 class SumBillsIssuedHandlerTest extends TestCase
 {
@@ -26,7 +25,7 @@ class SumBillsIssuedHandlerTest extends TestCase
                 ],
             ],
         ];
-        $handler = new SumBillsIssuedHandler();
+        $handler = new SumIssuedBillsHandler();
         $requestWithSums = $handler->handleRequest($noPendingQueriesRequest);
 
         $expectedResolvedRequest = [
@@ -48,5 +47,4 @@ class SumBillsIssuedHandlerTest extends TestCase
 
         $this->assertEquals($expectedResolvedRequest, $requestWithSums);
     }
-
 }

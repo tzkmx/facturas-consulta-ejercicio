@@ -9,7 +9,6 @@ use GuzzleHttp\Psr7\Response;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PendingQueriesHandler;
 use PHPUnit\Framework\TestCase;
 
-
 class PendingQueriesHandlerTest extends TestCase
 {
     public function testHandleInitialQueryWithSuccess()

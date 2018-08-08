@@ -4,7 +4,7 @@ namespace Integration;
 
 use Jefrancomix\ConsultaFacturas\RequestHandler\AddInitialRangeToRequest;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PendingQueriesHandler;
-use Jefrancomix\ConsultaFacturas\RequestHandler\SumBillsIssuedHandler;
+use Jefrancomix\ConsultaFacturas\RequestHandler\SumIssuedBillsHandler;
 use PHPUnit\Framework\TestCase;
 use Jefrancomix\ConsultaFacturas\Service\ResolveClientBillsForYear;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PipelineHandler;
@@ -25,7 +25,7 @@ class ResolveClientBillsForYearTest extends TestCase
 
         $initialHandler = new AddInitialRangeToRequest();
         $pendingQueriesHandler = new PendingQueriesHandler($client);
-        $sumIssuedBillsHandler = new SumBillsIssuedHandler();
+        $sumIssuedBillsHandler = new SumIssuedBillsHandler();
 
         $handler = new PipelineHandler(
             $initialHandler,

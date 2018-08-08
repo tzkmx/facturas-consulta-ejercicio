@@ -69,5 +69,4 @@ class PendingQueriesHandler implements HandlerInterface
             ];
         }
     }
-
 }

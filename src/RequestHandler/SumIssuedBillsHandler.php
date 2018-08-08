@@ -2,8 +2,7 @@
 
 namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
-
-class SumBillsIssuedHandler implements HandlerInterface
+class SumIssuedBillsHandler implements HandlerInterface
 {
     public function handleRequest(array $request): array
     {
@@ -18,7 +17,7 @@ class SumBillsIssuedHandler implements HandlerInterface
 
     protected function sumBills(array $successQueries): int
     {
-        return array_reduce($successQueries, function($initial, $success) {
+        return array_reduce($successQueries, function ($initial, $success) {
             return $initial + $success['billsIssued'];
         }, 0);
     }

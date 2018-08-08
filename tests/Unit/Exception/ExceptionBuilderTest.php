@@ -6,7 +6,6 @@ use Jefrancomix\ConsultaFacturas\Exception\ExceptionBuilder;
 use Jefrancomix\ConsultaFacturas\Exception\InvalidDateRangeException;
 use PHPUnit\Framework\TestCase;
 
-
 class ExceptionBuilderTest extends TestCase
 {
     public function testGetDateExceptionWithArgs()

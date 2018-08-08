@@ -20,18 +20,26 @@ class Functions
     }
     public static function getNumberOfDaysInRange(string $start, string $finish)
     {
-        assert(self::getYearOf($start) === self::getYearOf($finish),
-            self::getException('DateRange',
+        assert(
+            self::getYearOf($start) === self::getYearOf($finish),
+            self::getException(
+                'DateRange',
                 'Esta función solo debe ser usada para calcular rangos del mismo año.',
-                func_get_args()));
+                func_get_args()
+            )
+        );
 
         $startDayNumber = self::getDayOfYearFromDate($start);
         $finishDayNumber = self::getDayOfYearFromDate($finish);
 
-        assert($startDayNumber < $finishDayNumber,
-            self::getException('DateRange',
+        assert(
+            $startDayNumber < $finishDayNumber,
+            self::getException(
+                'DateRange',
                 'La fecha de inicio debe ser menor que la fecha final.',
-                func_get_args()));
+                func_get_args()
+            )
+        );
 
         return ($finishDayNumber - $startDayNumber) + 1;
     }

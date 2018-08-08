@@ -2,4 +2,6 @@
 
 namespace Jefrancomix\ConsultaFacturas\Exception;
 
-interface ConsultaFacturasExceptionInterface {}
+interface ConsultaFacturasExceptionInterface
+{
+}

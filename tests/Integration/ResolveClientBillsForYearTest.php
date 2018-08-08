@@ -14,7 +14,7 @@ class ResolveClientBillsForYearTest extends TestCase
         $service = new ResolveClientBillsForYear($handler);
         $clientId = 'testing';
         $year = '2017';
-        $report = $service->reportBillsOfClientForYear($clientId, $year);
+        $report = $service->getReport($clientId, $year);
 
         $expectedReport = [
             'clientId' => 'testing',

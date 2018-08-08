@@ -1,6 +1,7 @@
 <?php
 
 namespace Jefrancomix\ConsultaFacturas\Service;
+
 use Jefrancomix\ConsultaFacturas\RequestHandler\HandlerInterface;
 
 class ResolveClientBillsForYear
@@ -12,7 +13,7 @@ class ResolveClientBillsForYear
         $this->pipelineHandler = $pipelineHandler;
     }
 
-    public function reportBillsOfClientForYear($clientId, $year)
+    public function getReport($clientId, $year)
     {
         $request = [
             'clientId' => $clientId,

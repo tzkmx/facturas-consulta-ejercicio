@@ -2,6 +2,8 @@
 
 namespace Jefrancomix\ConsultaFacturas\Dates;
 
+use Jefrancomix\ConsultaFacturas\Exception\ExceptionBuilder;
+
 class Functions
 {
     public static function getDateFromDayOfYear(int $day, int $year)
@@ -19,14 +21,15 @@ class Functions
         list($startYear, , ) = explode('-', $start);
         list($finishYear, , )  = explode('-', $finish);
         if ($startYear !== $finishYear) {
-            throw new \OutOfRangeException(__FUNCTION__ .
-                ' solo debe ser usada para calcular rangos del mismo año');
+            $error = 'Esta función solo debe ser usada para calcular rangos del mismo año.';
+            throw ExceptionBuilder::get('DateRange', $error, func_get_args());
         }
-        
+
         $startDayNumber = Functions::getDayOfYearFromDate($start);
         $finishDayNumber = Functions::getDayOfYearFromDate($finish);
         if ($startDayNumber >= $finishDayNumber) {
-            throw new \OutOfRangeException('La fecha de inicio debe ser mayor que la fecha final');
+            $error = 'La fecha de inicio debe ser mayor que la fecha final.';
+            throw ExceptionBuilder::get('DateRange', $error, func_get_args());
         }
 
         return ($finishDayNumber - $startDayNumber) + 1;

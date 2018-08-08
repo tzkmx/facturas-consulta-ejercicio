@@ -3,6 +3,7 @@
 namespace Unit\Dates;
 
 use Jefrancomix\ConsultaFacturas\Dates\Functions;
+use Jefrancomix\ConsultaFacturas\Exception\InvalidDateRangeException;
 use PHPUnit\Framework\TestCase;
 
 class FunctionsTest extends TestCase
@@ -41,10 +42,10 @@ class FunctionsTest extends TestCase
 
     /**
      * @dataProvider getBadRangesToTestDiffException
-     * @expectedException \OutOfRangeException
      */
     public function testExceptionOfDaysInRange($startDate, $finishDate, $exceptionMessage)
     {
+        $this->expectException(InvalidDateRangeException::class);
         $this->expectExceptionMessageRegExp($exceptionMessage);
 
         Functions::getNumberOfDaysInRange($startDate, $finishDate);
@@ -52,8 +53,18 @@ class FunctionsTest extends TestCase
     public function getBadRangesToTestDiffException()
     {
         return [
-            [ '2017-01-01', '2018-01-01', '/solo.+para calcular rangos del mismo año/' ],
-            [ '2017-01-31', '2017-01-01', '/inicio.+debe ser mayor que.+final/' ]
+            [
+                '2017-01-01',
+                '2018-01-01',
+                '/solo.+para calcular rangos del mismo año.'.
+                ' Recibí: 2017-01-01 => 2018-01-01/'
+            ],
+            [
+                '2017-01-31',
+                '2017-01-01',
+                '/inicio.+debe ser mayor que.+final.' .
+                ' Recibí: 2017-01-31 => 2017-01-01/'
+            ]
         ];
     }
 

@@ -2,15 +2,36 @@
 
 namespace Integration;
 
+use Jefrancomix\ConsultaFacturas\RequestHandler\AddInitialRangeToRequest;
+use Jefrancomix\ConsultaFacturas\RequestHandler\PendingQueriesHandler;
+use Jefrancomix\ConsultaFacturas\RequestHandler\SumBillsIssuedHandler;
 use PHPUnit\Framework\TestCase;
 use Jefrancomix\ConsultaFacturas\Service\ResolveClientBillsForYear;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PipelineHandler;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 
 class ResolveClientBillsForYearTest extends TestCase
 {
     public function testServiceReportsBillsAndQueriesFetched()
     {
-        $handler = new PipelineHandler();
+        $mockHttpHandler = new MockHandler([
+            new Response('200', [], '99'),
+        ]);
+        $stack = HandlerStack::create($mockHttpHandler);
+        $client = new Client(['handler' => $stack]);
+
+        $initialHandler = new AddInitialRangeToRequest();
+        $pendingQueriesHandler = new PendingQueriesHandler($client);
+        $sumIssuedBillsHandler = new SumBillsIssuedHandler();
+
+        $handler = new PipelineHandler(
+            $initialHandler,
+            $pendingQueriesHandler,
+            $sumIssuedBillsHandler
+        );
         $service = new ResolveClientBillsForYear($handler);
         $clientId = 'testing';
         $year = '2017';

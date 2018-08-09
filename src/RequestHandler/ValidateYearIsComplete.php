@@ -16,9 +16,49 @@ class ValidateYearIsComplete implements HandlerInterface
             $request['isComplete'] = false;
             return $request;
         }
-        // TODO: método para calcular traslape de rangos
-        // p.ej. inicio o final de uno entre fechas de
-        // inicio y fin de cualquier otro de los rangos
+
+
+        $ranges = array_map(function ($query) {
+            return $query['range'];
+        }, $queriesToValidate);
+        // calculamos traslape de rangos, si fecha de inicio o fin de uno está entre otro rango
+        $hasOverlapedRanges = array_reduce($ranges, function ($init, $range) use ($ranges) {
+            // si ya encontramos traslape, solo cargamos el valor hasta el final
+            if ($init) {
+                return true;
+            }
+            $startToFind = Functions::getDayOfYearFromDate($range['start']);
+            $finishToFind = Functions::getDayOfYearFromDate($range['finish']);
+
+            $findOverlaped = array_reduce($ranges, function ($init, $range) use ($startToFind, $finishToFind) {
+                // si ya encontramos traslape, solo cargamos el valor hasta el final
+                if ($init) {
+                    return true;
+                }
+                $startToCompare = Functions::getDayOfYearFromDate($range['start']);
+                $finishToCompare = Functions::getDayOfYearFromDate($range['finish']);
+
+                // es el mismo rango, no se traslapa pues
+                if ($startToFind === $startToCompare && $finishToFind === $finishToCompare) {
+                    return false;
+                }
+
+                if ($startToFind > $startToCompare && $startToFind < $finishToCompare) {
+                    return true;
+                }
+                if ($finishToFind > $startToCompare && $finishToFind < $finishToCompare) {
+                    return true;
+                }
+                return false;
+            }, false);
+
+            return $findOverlaped;
+        }, false);
+
+        if ($hasOverlapedRanges) {
+            $request['isComplete'] = false;
+            return $request;
+        }
 
         $year = $request['year'];
 

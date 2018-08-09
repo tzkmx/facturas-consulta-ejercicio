@@ -117,7 +117,7 @@ class ValidateYearIsCompleteTest extends TestCase
                     ]
                 ]
             ],
-            '2 queries, 365 days, dates transposed' => [
+            '2 queries, 365 days, ranges overlaped with start of one between limits of other' => [
                 [
                     [
                         'range' => [ 'start' => '2017-01-01', 'finish' => '2017-01-31' ],

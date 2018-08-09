@@ -1,4 +1,4 @@
-<?php
+<?php // @codeCoverageIgnoreStart
 
 namespace Jefrancomix\ConsultaFacturas\Exception;
 

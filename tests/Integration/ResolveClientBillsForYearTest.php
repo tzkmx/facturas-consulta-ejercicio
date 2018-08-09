@@ -5,6 +5,7 @@ namespace Integration;
 use Jefrancomix\ConsultaFacturas\RequestHandler\AddInitialRangeToRequest;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PendingQueriesHandler;
 use Jefrancomix\ConsultaFacturas\RequestHandler\SumIssuedBillsHandler;
+use Jefrancomix\ConsultaFacturas\RequestHandler\ValidateYearIsComplete;
 use PHPUnit\Framework\TestCase;
 use Jefrancomix\ConsultaFacturas\Service\ResolveClientBillsForYear;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PipelineHandler;
@@ -25,11 +26,13 @@ class ResolveClientBillsForYearTest extends TestCase
 
         $initialHandler = new AddInitialRangeToRequest();
         $pendingQueriesHandler = new PendingQueriesHandler($client);
+        $validateYearComplete = new ValidateYearIsComplete();
         $sumIssuedBillsHandler = new SumIssuedBillsHandler();
 
         $handler = new PipelineHandler(
             $initialHandler,
             $pendingQueriesHandler,
+            $validateYearComplete,
             $sumIssuedBillsHandler
         );
         $service = new ResolveClientBillsForYear($handler);
@@ -40,6 +43,7 @@ class ResolveClientBillsForYearTest extends TestCase
         $expectedReport = [
             'clientId' => 'testing',
             'year' => '2017',
+            'isComplete' => true,
             'queriesFetched' => 1,
             'billsIssued' => 99,
             'successQueries' => [

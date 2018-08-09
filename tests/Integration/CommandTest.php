@@ -10,6 +10,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use Jefrancomix\ConsultaFacturas\RequestHandler\ValidateYearIsComplete;
 use Jefrancomix\ConsultaFacturas\Service\ResolveClientBillsForYear;
 use Jefrancomix\ConsultaFacturas\UserInterfaces\Command;
 use Jefrancomix\ConsultaFacturas\UserInterfaces\CommandInput;
@@ -40,6 +41,9 @@ class CommandTest extends TestCase
         $container['handler.service.pendingQueries'] = function ($c) {
             return new PendingQueriesHandler($c['handler.http.client']);
         };
+        $container['handler.service.validateYear'] = function ($c) {
+            return new ValidateYearIsComplete();
+        };
         $container['handler.service.sumIssuedBills'] = function ($c) {
             return new SumIssuedBillsHandler();
         };
@@ -47,6 +51,7 @@ class CommandTest extends TestCase
             return new PipelineHandler(
                 $c['handler.service.initial'],
                 $c['handler.service.pendingQueries'],
+                $c['handler.service.validateYear'],
                 $c['handler.service.sumIssuedBills']
             );
         };

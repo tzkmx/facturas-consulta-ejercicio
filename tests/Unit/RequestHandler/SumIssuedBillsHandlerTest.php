@@ -12,7 +12,7 @@ class SumBillsIssuedHandlerTest extends TestCase
         $noPendingQueriesRequest = [
             'clientId' => 'testing',
             'year' => '2017',
-            'pendingQueries' => [],
+            'isComplete' => true,
             'queriesFetched' => 1,
             'successQueries' => [
                 [
@@ -31,6 +31,7 @@ class SumBillsIssuedHandlerTest extends TestCase
         $expectedResolvedRequest = [
             'clientId' => 'testing',
             'year' => '2017',
+            'isComplete' => true,
             'billsIssued' => 99,
             'queriesFetched' => 1,
             'successQueries' => [
@@ -46,5 +47,31 @@ class SumBillsIssuedHandlerTest extends TestCase
         ];
 
         $this->assertEquals($expectedResolvedRequest, $requestWithSums);
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testRejectSumOfIncompleteRequest()
+    {
+        $noYearCompleteRequest = [
+            'clientId' => 'testing',
+            'year' => '2017',
+            'pendingQueries' => [],
+            'isComplete' => false,
+            'queriesFetched' => 1,
+            'successQueries' => [
+                [
+                    'range' => [
+                        'start' => '2017-01-01',
+                        'finish' => '2017-12-31',
+                    ],
+                    'tries' => 1,
+                    'billsIssued' => 99,
+                ],
+            ],
+        ];
+        $handler = new SumIssuedBillsHandler();
+        $requestWithSums = $handler->handleRequest($noYearCompleteRequest);
     }
 }

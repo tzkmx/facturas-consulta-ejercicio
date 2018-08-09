@@ -10,13 +10,17 @@ class PipelineHandler implements HandlerInterface
 
     protected $sumIssuedBillsHandler;
 
+    protected $validateYearIsComplete;
+
     public function __construct(
         AddInitialRangeToRequest $addInitialRange,
         PendingQueriesHandler $pendingQueriesHandler,
+        ValidateYearIsComplete $validateYearIsComplete,
         SumIssuedBillsHandler $sumIssuedBillsHandler
     ) {
         $this->addInitialRange = $addInitialRange;
         $this->pendingQueriesHandler = $pendingQueriesHandler;
+        $this->validateYearIsComplete = $validateYearIsComplete;
         $this->sumIssuedBillsHandler = $sumIssuedBillsHandler;
     }
 
@@ -26,7 +30,9 @@ class PipelineHandler implements HandlerInterface
 
         $resolvedQueriesRequest = $this->pendingQueriesHandler->handleRequest($initialRequest);
 
-        $resolvedRequest = $this->sumIssuedBillsHandler->handleRequest($resolvedQueriesRequest);
+        $validatedCompleteYear = $this->validateYearIsComplete->handleRequest($resolvedQueriesRequest);
+
+        $resolvedRequest = $this->sumIssuedBillsHandler->handleRequest($validatedCompleteYear);
 
         return $resolvedRequest;
     }

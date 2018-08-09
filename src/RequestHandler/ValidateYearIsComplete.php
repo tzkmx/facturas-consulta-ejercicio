@@ -70,7 +70,7 @@ class ValidateYearIsComplete implements HandlerInterface
                     $accumulator['repeated'] = true;
                     return $accumulator;
                 }
-                
+
                 $accumulator['dates'][$lookForDate] = true;
             }
             return $accumulator;

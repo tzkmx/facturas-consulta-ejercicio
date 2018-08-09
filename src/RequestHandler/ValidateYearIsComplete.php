@@ -2,11 +2,12 @@
 
 namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
+use Jefrancomix\ConsultaFacturas\Dates\DateRange;
 use Jefrancomix\ConsultaFacturas\Dates\Functions;
 
 class ValidateYearIsComplete implements HandlerInterface
 {
-    protected $memoizedQueryRanges;
+    protected $cachedQueryRanges;
 
     public function handleRequest(array $request): array
     {
@@ -36,112 +37,77 @@ class ValidateYearIsComplete implements HandlerInterface
 
     protected function getRangesFromQueries(array $queries)
     {
-        if (count($this->memoizedQueryRanges)) {
-            return $this->memoizedQueryRanges;
+        if (count($this->cachedQueryRanges)) {
+            return $this->cachedQueryRanges;
         }
 
         $ranges = array_map(function ($query) {
             return $query['range'];
         }, $queries);
 
-        $this->memoizedQueryRanges = $ranges;
+        $this->cachedQueryRanges = $ranges;
 
         return $ranges;
     }
 
     protected function isRightNumberOfDaysCovered($year, array $ranges): bool
     {
-        $startOfYear = "{$year}-01-01";
-        $endOfYear = "{$year}-12-31";
-        $daysInYear = Functions::getNumberOfDaysInRange($startOfYear, $endOfYear);
+        $yearRange = [
+            'start' => "{$year}-01-01",
+            'finish' => "{$year}-12-31",
+        ];
+        $daysInYear = DateRange::fromArray($yearRange)->getDaysInRange();
 
-        $daysCoveredByQueries = array_reduce($ranges, function ($init, $range) {
-            return $init + Functions::getNumberOfDaysInRange($range['start'], $range['finish']);
+        $daysInRanges = array_reduce($ranges, function ($init, $range) {
+            return $init + DateRange::fromArray($range)->getDaysInRange();
         }, 0);
 
-        return ($daysCoveredByQueries === $daysInYear);
+        return ($daysInRanges === $daysInYear);
     }
 
     protected function hasOverlapOfRanges(array $ranges): bool
     {
-        $hasRepeatedRanges = $this->hasRepeatedDates($ranges);
-        if ($hasRepeatedRanges) {
-            return true;
-        }
-        $hasOverlapOfRanges = $this->hasOverlapedRanges($ranges);
+        $searchForOverlap = array_reduce($ranges, $this->searchEveryRangeForIntersection($ranges), 0);
 
-        return $hasOverlapOfRanges;
+        return $searchForOverlap === true;
     }
 
-    protected function hasRepeatedDates(array $ranges): bool
+    protected function searchEveryRangeForIntersection(array $ranges)
     {
-        $accumulatorInit = [
-            'dates' => [],
-            'repeated' => false
-        ];
-
-        $lookForRepeatedDates = array_reduce($ranges, function ($accumulator, $range) {
-            // si ya encontramos fecha repetida solo seguimos indicándolo
-            if ($accumulator === true) {
+        return function ($indexOfItemOrFoundOverlap, $range) use ($ranges) {
+            if ($indexOfItemOrFoundOverlap === true) {
                 return true;
             }
 
-            foreach (['start', 'finish'] as $keyDate) {
-                $lookForDate = $range[$keyDate];
+            $dateRange = DateRange::fromArray($range);
 
-                // si fechas de inicio o final se encuentran en acumulador
-                if (isset($accumulator['dates'][$lookForDate])) {
-                    // ya no necesitaremos las fechas
-                    return true;
-                }
+            $foundOverlap = array_reduce(
+                $ranges,
+                $this->searchRangeIntersection($dateRange, $indexOfItemOrFoundOverlap),
+                0
+            );
 
-                $accumulator['dates'][$lookForDate] = true;
-            }
-            return $accumulator;
-        }, $accumulatorInit);
-
-        return isset($lookForRepeatedDates['dates']) ? false : true;
-    }
-
-    /**
-     * Calculamos traslape de rangos, si fecha de inicio o fin de uno está entre otro rango.
-     *
-     * @param array $ranges
-     * @return bool
-     */
-    protected function hasOverlapedRanges(array $ranges): bool
-    {
-        return array_reduce($ranges, function ($init, $range) use ($ranges) {
-            // si ya encontramos traslape, solo cargamos el valor hasta el final
-            if ($init) {
+            if ($foundOverlap === true) {
                 return true;
             }
-            $startToFind = Functions::getUnixTimeFromDate($range['start']);
-            $finishToFind = Functions::getUnixTimeFromDate($range['finish']);
+            return $indexOfItemOrFoundOverlap + 1;
+        };
+    }
 
-            $findOverlaped = array_reduce($ranges, function ($init, $range) use ($startToFind, $finishToFind) {
-                // si ya encontramos traslape, solo cargamos el valor hasta el final
-                if ($init) {
-                    return true;
-                }
-                $startToCompare = Functions::getUnixTimeFromDate($range['start']);
-                $finishToCompare = Functions::getUnixTimeFromDate($range['finish']);
+    protected function searchRangeIntersection(DateRange $rangeToSearch, int $indexOfTheRange)
+    {
+        return function ($indexOfItemLookedOrTrue, $rangeToCompare) use ($rangeToSearch, $indexOfTheRange) {
+            if ($indexOfItemLookedOrTrue === true) {
+                return true;
+            }
 
-                // es el mismo rango, no se traslapa pues
-                if ($startToFind === $startToCompare && $finishToFind === $finishToCompare) {
-                    return false;
-                }
+            if ($indexOfTheRange === $indexOfItemLookedOrTrue) {
+                return $indexOfItemLookedOrTrue + 1;
+            }
 
-                if ($startToFind > $startToCompare && $startToFind < $finishToCompare) {
-                    return true;
-                }
-                if ($finishToFind > $startToCompare && $finishToFind < $finishToCompare) {
-                    return true;
-                }
-                return false;
-            }, false);
+            $intersectedRanges = $rangeToSearch->intersects(DateRange::fromArray($rangeToCompare));
 
-            return $findOverlaped;
-        }, false);
+            return $intersectedRanges || ($indexOfItemLookedOrTrue + 1);
+        };
     }
 }

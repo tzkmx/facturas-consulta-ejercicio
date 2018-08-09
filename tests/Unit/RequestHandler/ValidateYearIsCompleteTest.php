@@ -102,6 +102,20 @@ class ValidateYearIsCompleteTest extends TestCase
                         'billsIssued' => 20,
                     ]
                 ]
+            ],
+            '2 queries, 365 days, dates repeated' => [
+                [
+                    [
+                        'range' => [ 'start' => '2017-01-01', 'finish' => '2017-01-31' ],
+                        'tries' => 1,
+                        'billsIssued' => 10,
+                    ],
+                    [
+                        'range' => [ 'start' => '2017-01-31', 'finish' => '2017-12-30' ],
+                        'tries' => 1,
+                        'billsIssued' => 20,
+                    ]
+                ]
             ]
         ];
     }

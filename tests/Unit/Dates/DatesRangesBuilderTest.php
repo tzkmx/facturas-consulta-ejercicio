@@ -2,6 +2,7 @@
 
 namespace Jefrancomix\ConsultaFacturas\Test;
 
+use Jefrancomix\ConsultaFacturas\Exception\InvalidDateRangeException;
 use PHPUnit\Framework\TestCase;
 
 use Jefrancomix\ConsultaFacturas\DatesRangesBuilder;
@@ -92,7 +93,7 @@ class DatesRangesBuilderTest extends TestCase
     public function testExceptionOnStartSameAsFinishDate()
     {
         $builder = new DatesRangesBuilder(2017);
-        $this->expectException(\RangeException::class);
+        $this->expectException(InvalidDateRangeException::class);
 
         $builder->getNewRange([
             'start' => '2017-01-01',

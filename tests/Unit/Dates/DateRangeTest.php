@@ -18,7 +18,7 @@ class DateRangeTest extends TestCase
 
         $this->assertEquals($expectedArray, $range->toArray());
 
-        $this->assertEquals(['start'=>$start, 'finish'=>$finish], $range->toArray(true));
+        $this->assertEquals(['start'=>$start, 'finish'=>$finish], $range->toHash());
     }
 
     /**

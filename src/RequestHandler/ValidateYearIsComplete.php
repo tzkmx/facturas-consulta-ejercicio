@@ -3,7 +3,6 @@
 namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
 use Jefrancomix\ConsultaFacturas\Dates\DateRange;
-use Jefrancomix\ConsultaFacturas\Dates\Functions;
 
 class ValidateYearIsComplete implements HandlerInterface
 {

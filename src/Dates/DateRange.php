@@ -22,13 +22,16 @@ class DateRange
         $this->daysInRange = $daysInRange->days + 1;
     }
 
-    public function toArray(bool $withKeys = false)
+    public function toArray()
     {
-        $data = [
+        return [
             $this->getStartDate('Y-m-d'),
             $this->getEndDate('Y-m-d'),
         ];
-        return $withKeys ? array_combine(['start', 'finish'], $data) : $data;
+    }
+    public function toHash()
+    {
+        return array_combine(['start', 'finish'], $this->toArray());
     }
     public static function fromArray(array $init)
     {

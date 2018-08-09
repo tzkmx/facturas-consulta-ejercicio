@@ -9,8 +9,8 @@ class AddInitialRangeToRequest implements HandlerInterface
         $year = $request['year'];
 
         $firstQueryRange = [
-            'start' => "${year}-01-01",
-            'finish' => "${year}-12-31",
+            'start' => "{$year}-01-01",
+            'finish' => "{$year}-12-31",
         ];
 
         $request['pendingQueries'] = [$firstQueryRange];

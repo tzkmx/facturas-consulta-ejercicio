@@ -1,0 +1,11 @@
+plugins:
+  phpmd:
+    enabled: true
+    config:
+        file_extensions: "php"
+        rulesets: "controversial,design,codesize,unusedcode,messdetector-ruleset.xml"
+  sonar-php:
+      enabled: true
+      config:
+        tests_patterns:
+          - tests/**

@@ -23,9 +23,9 @@ class Command
         if ($rawReport['clientId'] === $clientId) {
             $billsIssued = $rawReport['billsIssued'];
             $queriesFetched = $rawReport['queriesFetched'];
-            return "Para cliente con Id: ${clientId} " .
-                "se emitieron ${billsIssued} facturas en ${year}. " .
-                "El proceso requirió ${queriesFetched} consulta remota.";
+            return "Para cliente con Id: {$clientId} " .
+                "se emitieron {$billsIssued} facturas en {$year}. " .
+                "El proceso requirió {$queriesFetched} consulta remota.";
         }
     }
 }

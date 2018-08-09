@@ -18,6 +18,11 @@ class Functions
         $date = \DateTime::createFromFormat('Y-m-d', $date);
         return intval($date->format('z'));
     }
+    public static function getUnixTimeFromDate(string $date)
+    {
+        $date = \DateTime::createFromFormat('Y-m-d', $date);
+        return $date->getTimestamp();
+    }
     public static function getNumberOfDaysInRange(string $start, string $finish)
     {
         assert(

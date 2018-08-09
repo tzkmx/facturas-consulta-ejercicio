@@ -13,16 +13,9 @@ class ValidateYearIsComplete implements HandlerInterface
         $queriesToValidate = $request['successQueries'];
         $ranges = $this->getRangesFromQueries($queriesToValidate);
 
-        $hasRepeatedDates = $this->hasRepeatedDates($ranges);
+        $hasOverlapOfRanges = $this->hasOverlapOfRanges($ranges);
 
-        if ($hasRepeatedDates) {
-            $request['isComplete'] = false;
-            return $request;
-        }
-
-        $hasOverlapedRanges = $this->hasOverlapedRanges($ranges);
-
-        if ($hasOverlapedRanges) {
+        if ($hasOverlapOfRanges) {
             $request['isComplete'] = false;
             return $request;
         }
@@ -69,6 +62,17 @@ class ValidateYearIsComplete implements HandlerInterface
         return ($daysCoveredByQueries === $daysInYear);
     }
 
+    protected function hasOverlapOfRanges(array $ranges): bool
+    {
+        $hasRepeatedRanges = $this->hasRepeatedDates($ranges);
+        if ($hasRepeatedRanges) {
+            return true;
+        }
+        $hasOverlapOfRanges = $this->hasOverlapedRanges($ranges);
+
+        return $hasOverlapOfRanges;
+    }
+
     protected function hasRepeatedDates(array $ranges): bool
     {
         $accumulatorInit = [
@@ -78,8 +82,8 @@ class ValidateYearIsComplete implements HandlerInterface
 
         $lookForRepeatedDates = array_reduce($ranges, function ($accumulator, $range) {
             // si ya encontramos fecha repetida solo seguimos indicándolo
-            if ($accumulator['repeated']) {
-                return $accumulator;
+            if ($accumulator === true) {
+                return true;
             }
 
             foreach (['start', 'finish'] as $keyDate) {
@@ -88,10 +92,7 @@ class ValidateYearIsComplete implements HandlerInterface
                 // si fechas de inicio o final se encuentran en acumulador
                 if (isset($accumulator['dates'][$lookForDate])) {
                     // ya no necesitaremos las fechas
-                    unset($accumulator['dates']);
-                    // pues ya sabemos que al menos una está repetida
-                    $accumulator['repeated'] = true;
-                    return $accumulator;
+                    return true;
                 }
 
                 $accumulator['dates'][$lookForDate] = true;
@@ -99,7 +100,7 @@ class ValidateYearIsComplete implements HandlerInterface
             return $accumulator;
         }, $accumulatorInit);
 
-        return $lookForRepeatedDates['repeated'];
+        return isset($lookForRepeatedDates['dates']) ? false : true;
     }
 
     /**
@@ -115,16 +116,16 @@ class ValidateYearIsComplete implements HandlerInterface
             if ($init) {
                 return true;
             }
-            $startToFind = Functions::getDayOfYearFromDate($range['start']);
-            $finishToFind = Functions::getDayOfYearFromDate($range['finish']);
+            $startToFind = Functions::getUnixTimeFromDate($range['start']);
+            $finishToFind = Functions::getUnixTimeFromDate($range['finish']);
 
             $findOverlaped = array_reduce($ranges, function ($init, $range) use ($startToFind, $finishToFind) {
                 // si ya encontramos traslape, solo cargamos el valor hasta el final
                 if ($init) {
                     return true;
                 }
-                $startToCompare = Functions::getDayOfYearFromDate($range['start']);
-                $finishToCompare = Functions::getDayOfYearFromDate($range['finish']);
+                $startToCompare = Functions::getUnixTimeFromDate($range['start']);
+                $finishToCompare = Functions::getUnixTimeFromDate($range['finish']);
 
                 // es el mismo rango, no se traslapa pues
                 if ($startToFind === $startToCompare && $finishToFind === $finishToCompare) {

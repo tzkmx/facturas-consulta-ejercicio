@@ -16,6 +16,9 @@ class ValidateYearIsComplete implements HandlerInterface
             $request['isComplete'] = false;
             return $request;
         }
+        // TODO: método para calcular traslape de rangos
+        // p.ej. inicio o final de uno entre fechas de
+        // inicio y fin de cualquier otro de los rangos
 
         $year = $request['year'];
 
@@ -42,7 +45,7 @@ class ValidateYearIsComplete implements HandlerInterface
             return $init + Functions::getNumberOfDaysInRange($range['start'], $range['finish']);
         }, 0);
 
-        return $daysCoveredByQueries === $daysInYear;
+        return ($daysCoveredByQueries === $daysInYear);
     }
 
     protected function hasRepeatedDates(array $queries): bool

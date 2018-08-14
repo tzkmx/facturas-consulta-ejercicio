@@ -5,6 +5,9 @@ namespace Unit\RequestHandler;
 use Jefrancomix\ConsultaFacturas\RequestHandler\ValidateYearIsComplete;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @group RequestHandlerRefactor
+ */
 class ValidateYearIsCompleteTest extends TestCase
 {
     public function testSuccessQueriesCoverWholeYear()
@@ -44,7 +47,7 @@ class ValidateYearIsCompleteTest extends TestCase
             ],
         ];
 
-        $validatedRequest = $validator->handleRequest($noPendingQueriesRequest);
+        $validatedRequest = $validator->handle($noPendingQueriesRequest);
 
         $this->assertEquals($expectedValidRequest, $validatedRequest);
     }
@@ -72,7 +75,7 @@ class ValidateYearIsCompleteTest extends TestCase
             'successQueries' => $queries,
         ];
 
-        $validatedRequest = $validator->handleRequest($noPendingQueriesButBadRange);
+        $validatedRequest = $validator->handle($noPendingQueriesButBadRange);
 
         $this->assertEquals($expectedIncompleteRequest, $validatedRequest);
     }

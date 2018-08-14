@@ -11,17 +11,23 @@ use PHPUnit\Framework\TestCase;
 
 class RequestForYearTest extends TestCase
 {
+    protected $dateRangesFactory;
+    protected $queriesFactory;
+    protected $request;
+    
+    public function setUp()
+    {
+        $this->dateRangesFactory = new DateRangeFactory();
+        $this->queriesFactory = new QueryFactory($this->dateRangesFactory);
+
+        $this->request = new RequestForYear('testing', 2017, $this->queriesFactory);
+    }
     public function testGetInitialQuery()
     {
-        $dateRangesFactory = new DateRangeFactory();
-        $queriesFactory = new QueryFactory($dateRangesFactory);
-
-        $request = new RequestForYear('testing', 2017, $queriesFactory);
-
         $expectedRange = new DateRange('2017-01-01', '2017-12-31');
         $expectedQuery = new Query($expectedRange);
 
-        $queries = $request->getQueries();
+        $queries = $this->request->getQueries();
 
         $this->assertCount(1, $queries);
 
@@ -29,23 +35,18 @@ class RequestForYearTest extends TestCase
 
         $this->assertEquals($expectedQuery, $query);
 
-        $this->assertEquals(false, $request->isComplete());
+        $this->assertEquals(false, $this->request->isComplete());
     }
 
     public function testSuccessOfInitialQuery()
     {
-        $dateRangesFactory = new DateRangeFactory();
-        $queriesFactory = new QueryFactory($dateRangesFactory);
-
-        $request = new RequestForYear('testing', 2017, $queriesFactory);
-
         $range = new DateRange('2017-01-01', '2017-12-31');
         $query = new Query($range);
 
         $query->saveResult(20);
 
-        $request->reportQuery($query);
+        $this->request->reportQuery($query);
 
-        $this->assertEquals(true, $request->isComplete());
+        $this->assertEquals(true, $this->request->isComplete());
     }
 }

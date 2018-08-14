@@ -2,9 +2,11 @@
 
 namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
+use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
+
 class AddInitialRangeToRequest implements HandlerInterface
 {
-    public function handleRequest(array $request): array
+    public function handle(RequestForYearInterface $request): RequestForYearInterface
     {
         $year = $request['year'];
 

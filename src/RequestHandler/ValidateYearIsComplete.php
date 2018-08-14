@@ -3,12 +3,13 @@
 namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
 use Jefrancomix\ConsultaFacturas\Dates\DateRange;
+use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 
 class ValidateYearIsComplete implements HandlerInterface
 {
     protected $cachedQueryRanges;
 
-    public function handleRequest(array $request): array
+    public function handle(RequestForYearInterface $request): RequestForYearInterface
     {
         $queriesToValidate = $request['successQueries'];
         $ranges = $this->getRangesFromQueries($queriesToValidate);

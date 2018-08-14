@@ -5,6 +5,9 @@ namespace Unit\RequestHandler;
 use Jefrancomix\ConsultaFacturas\RequestHandler\SumIssuedBillsHandler;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @group RequestHandlerRefactor
+ */
 class SumBillsIssuedHandlerTest extends TestCase
 {
     public function testSumBillsIssued()
@@ -26,7 +29,7 @@ class SumBillsIssuedHandlerTest extends TestCase
             ],
         ];
         $handler = new SumIssuedBillsHandler();
-        $requestWithSums = $handler->handleRequest($noPendingQueriesRequest);
+        $requestWithSums = $handler->handle($noPendingQueriesRequest);
 
         $expectedResolvedRequest = [
             'clientId' => 'testing',
@@ -72,6 +75,6 @@ class SumBillsIssuedHandlerTest extends TestCase
             ],
         ];
         $handler = new SumIssuedBillsHandler();
-        $requestWithSums = $handler->handleRequest($noYearCompleteRequest);
+        $requestWithSums = $handler->handle($noYearCompleteRequest);
     }
 }

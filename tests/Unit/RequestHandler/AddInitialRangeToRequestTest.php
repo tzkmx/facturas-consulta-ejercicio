@@ -5,6 +5,9 @@ namespace Unit\RequestHandler;
 use Jefrancomix\ConsultaFacturas\RequestHandler\AddInitialRangeToRequest;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @group RequestHandlerRefactor
+ */
 class AddInitialRangeToRequestTest extends TestCase
 {
     public function testRequestIncludesInitialRange()
@@ -25,7 +28,7 @@ class AddInitialRangeToRequestTest extends TestCase
             ],
         ];
 
-        $request = $handler->handleRequest($previousRequest);
+        $request = $handler->handle($previousRequest);
 
         $this->assertEquals($expectedRequest, $request);
     }

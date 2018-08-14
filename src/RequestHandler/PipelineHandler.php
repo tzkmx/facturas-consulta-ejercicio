@@ -2,6 +2,8 @@
 
 namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
+use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
+
 class PipelineHandler implements HandlerInterface
 {
     protected $addInitialRange;
@@ -24,15 +26,15 @@ class PipelineHandler implements HandlerInterface
         $this->sumIssuedBillsHandler = $sumIssuedBillsHandler;
     }
 
-    public function handleRequest(array $request): array
+    public function handle(RequestForYearInterface $request): RequestForYearInterface
     {
-        $initialRequest = $this->addInitialRange->handleRequest($request);
+        $initialRequest = $this->addInitialRange->handle($request);
 
-        $resolvedQueriesRequest = $this->pendingQueriesHandler->handleRequest($initialRequest);
+        $resolvedQueriesRequest = $this->pendingQueriesHandler->handle($initialRequest);
 
-        $validatedCompleteYear = $this->validateYearIsComplete->handleRequest($resolvedQueriesRequest);
+        $validatedCompleteYear = $this->validateYearIsComplete->handle($resolvedQueriesRequest);
 
-        $resolvedRequest = $this->sumIssuedBillsHandler->handleRequest($validatedCompleteYear);
+        $resolvedRequest = $this->sumIssuedBillsHandler->handle($validatedCompleteYear);
 
         return $resolvedRequest;
     }

@@ -14,6 +14,9 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 
+/**
+ * @group RequestHandlerRefactor
+ */
 class ResolveClientBillsForYearTest extends TestCase
 {
     public function testServiceReportsBillsAndQueriesFetched()

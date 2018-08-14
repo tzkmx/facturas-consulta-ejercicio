@@ -4,6 +4,7 @@ namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 
 class PendingQueriesHandler implements HandlerInterface
 {
@@ -18,7 +19,7 @@ class PendingQueriesHandler implements HandlerInterface
         $this->client = $client;
     }
 
-    public function handleRequest(array $request): array
+    public function handle(RequestForYearInterface $request): RequestForYearInterface
     {
         $this->pendingQueries = $request['pendingQueries'];
 

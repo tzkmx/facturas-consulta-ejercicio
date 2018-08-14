@@ -17,6 +17,9 @@ use Jefrancomix\ConsultaFacturas\UserInterfaces\CommandInput;
 use PHPUnit\Framework\TestCase;
 use Pimple\Container;
 
+/**
+ * @group RequestHandlerRefactor
+ */
 class CommandTest extends TestCase
 {
     public function testBasicCommandRun()

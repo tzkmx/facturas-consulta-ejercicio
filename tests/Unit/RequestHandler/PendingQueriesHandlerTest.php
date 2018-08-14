@@ -9,6 +9,9 @@ use GuzzleHttp\Psr7\Response;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PendingQueriesHandler;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @group RequestHandlerRefactor
+ */
 class PendingQueriesHandlerTest extends TestCase
 {
     public function testHandleInitialQueryWithSuccess()
@@ -32,7 +35,7 @@ class PendingQueriesHandlerTest extends TestCase
             ],
         ];
 
-        $resolvedRequest = $handler->handleRequest($initialRequest);
+        $resolvedRequest = $handler->handle($initialRequest);
 
         $expectedResolvedRequest = [
             'clientId' => 'testing',

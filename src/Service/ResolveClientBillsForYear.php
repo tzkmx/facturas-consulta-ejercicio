@@ -19,7 +19,7 @@ class ResolveClientBillsForYear
             'clientId' => $clientId,
             'year' => $year,
         ];
-        $report = $this->pipelineHandler->handleRequest($request);
+        $report = $this->pipelineHandler->handle($request);
 
         return $report;
     }

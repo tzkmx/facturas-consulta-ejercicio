@@ -15,12 +15,4 @@
             </exclude>
         </whitelist>
     </filter>
-    <php>
-        <!-- zend.assertions can't be changed in runtime,
-         however I write here the set that should be in php.ini
-         in order to some tests can run -->
-        <ini name="zend.assertions" value="1"/>
-        <ini name="assert.active" value="1"/>
-        <ini name="assert.exception" value="1"/>
-    </php>
 </phpunit>

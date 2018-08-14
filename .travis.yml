@@ -1,11 +1,12 @@
 language: php
 php:
- - '7.0'
+ - '7.1'
 before_script:
  - composer install
  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
  - chmod +x ./cc-test-reporter
  - ./cc-test-reporter before-build
+script: phpunit --exclude-group RequestHandlerRefactor
 after_script:
   - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 cache:

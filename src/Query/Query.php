@@ -46,6 +46,13 @@ class Query implements QueryInterface
         return $this->error;
     }
 
+    /**
+     * Unique method to mutate Query Status and variables.
+     *
+     * @SuppressWarnings(PHPMD.ElseExpression) multiple return would be preposterous here
+     *
+     * @param string $result receives the result from the QueryHandler
+     */
     public function saveResult(string $result)
     {
         $this->tries++;

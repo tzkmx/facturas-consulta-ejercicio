@@ -2,18 +2,17 @@
 
 namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
-use Jefrancomix\ConsultaFacturas\Exception\ExceptionBuilder;
+use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 
 class SumIssuedBillsHandler implements HandlerInterface
 {
-    use ExceptionBuilder;
-    public function handleRequest(array $request): array
+    public function handle(RequestForYearInterface $request): RequestForYearInterface
     {
         if (isset($request['pendingQueries'])) {
-            throw self::getException('Pendientes', 'Tiene consultas pendientes?', []);
+            throw new \RuntimeException('Consultas Pendientes: Tiene consultas pendientes?');
         }
         if (!$request['isComplete']) {
-            throw self::getException('Incomplete', '¿Año incompleto?', []);
+            throw new \RuntimeException('Year Incomplete: ¿Año incompleto?');
         }
         if (isset($request['successQueries'])) {
             $request['billsIssued'] = $this->sumBills($request['successQueries']);

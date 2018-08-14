@@ -31,4 +31,21 @@ class RequestForYearTest extends TestCase
 
         $this->assertEquals(false, $request->isComplete());
     }
+
+    public function testSuccessOfInitialQuery()
+    {
+        $dateRangesFactory = new DateRangeFactory();
+        $queriesFactory = new QueryFactory($dateRangesFactory);
+
+        $request = new RequestForYear('testing', 2017, $queriesFactory);
+
+        $range = new DateRange('2017-01-01', '2017-12-31');
+        $query = new Query($range);
+
+        $query->saveResult(20);
+
+        $request->reportQuery($query);
+
+        $this->assertEquals(true, $request->isComplete());
+    }
 }

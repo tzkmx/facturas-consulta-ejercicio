@@ -42,7 +42,12 @@ class RequestForYear implements RequestForYearInterface
 
     public function reportQuery(QueryInterface $query)
     {
-        // TODO: Implement reportQuery() method.
+        foreach ($this->queries as $index => $savedQuery) {
+            // TODO: considerar Query::equals(otherQuery) con uniqid()
+            if ($query->range() == $savedQuery->range()) {
+                $this->queries[$index] = $query;
+            }
+        }
     }
 
     private function aQueryIsInvalid(bool $init, QueryInterface $query)

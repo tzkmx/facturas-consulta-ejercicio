@@ -25,19 +25,10 @@ class DateRange
     public function toArray()
     {
         return [
-            $this->getStartDate('Y-m-d'),
-            $this->getEndDate('Y-m-d'),
+            'start' => $this->getStartDate('Y-m-d'),
+            'finish' => $this->getEndDate('Y-m-d'),
         ];
     }
-    public function toHash()
-    {
-        return array_combine(['start', 'finish'], $this->toArray());
-    }
-    public static function fromArray(array $init)
-    {
-        return new self($init['start'], $init['finish']);
-    }
-
     public function getDaysInRange()
     {
         return $this->daysInRange;

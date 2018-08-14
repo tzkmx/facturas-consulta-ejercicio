@@ -14,11 +14,7 @@ class DateRangeTest extends TestCase
 
         $range = new DateRange($start, $finish);
 
-        $expectedArray = [ $start, $finish ];
-
-        $this->assertEquals($expectedArray, $range->toArray());
-
-        $this->assertEquals(['start'=>$start, 'finish'=>$finish], $range->toHash());
+        $this->assertEquals(['start'=>$start, 'finish'=>$finish], $range->toArray());
     }
 
     /**
@@ -79,18 +75,5 @@ class DateRangeTest extends TestCase
             [ '2017-12-31', '2018-01-02', 3 ],
             [ '2017-12-31', '2018-01-01', 2 ],
         ];
-    }
-
-    public function testFromArrayConstructor()
-    {
-        $init = [
-            'start' => '2017-01-01',
-            'finish' => '2017-12-31',
-        ];
-
-        $range = DateRange::fromArray($init);
-
-        $this->assertEquals($init['start'], $range->getStartDate('Y-m-d'));
-        $this->assertEquals($init['finish'], $range->getEndDate('Y-m-d'));
     }
 }

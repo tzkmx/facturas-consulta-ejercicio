@@ -34,7 +34,7 @@ class RequestForYear implements RequestForYearInterface
         );
         return !$invalidQueryFound;
     }
-
+    // $this->request->reportQuery($query);
     public function getQueries(): array
     {
         return $this->queries;
@@ -44,7 +44,7 @@ class RequestForYear implements RequestForYearInterface
     {
         foreach ($this->queries as $index => $savedQuery) {
             // TODO: considerar Query::equals(otherQuery) con uniqid()
-            if ($query->range() == $savedQuery->range()) {
+            if ($query->range() === $savedQuery->range()) {
                 $this->queries[$index] = $query;
             }
         }

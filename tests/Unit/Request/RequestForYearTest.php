@@ -15,38 +15,64 @@ class RequestForYearTest extends TestCase
     protected $queriesFactory;
     protected $request;
     
-    public function setUp()
+    public function testInitialQueryIsNotComplete()
+    {
+        $this->givenInitialQuery();
+
+        $expectedRange = new DateRange('2017-01-01', '2017-12-31');
+        $expectedQueries = array(new Query($expectedRange));
+
+        $this->thenRequestHaveProperties(
+            $isComplete = false,
+            $expectedQueriesLength = 1,
+            $expectedQueries
+        );
+    }
+    
+    public function testSuccessOfInitialQuery()
+    {
+        $this->givenInitialQuery();
+
+        $this->whenInitialQuerySucceded();
+
+        $this->thenRequestHaveProperties(
+            $isComplete = true,
+            $expectedQueriesLength = 1
+        );
+    }
+
+    private function givenInitialQuery()
     {
         $this->dateRangesFactory = new DateRangeFactory();
         $this->queriesFactory = new QueryFactory($this->dateRangesFactory);
 
         $this->request = new RequestForYear('testing', 2017, $this->queriesFactory);
     }
-    public function testGetInitialQuery()
+
+    private function whenInitialQuerySucceded()
     {
-        $expectedRange = new DateRange('2017-01-01', '2017-12-31');
-        $expectedQuery = new Query($expectedRange);
+        $queries = $this->request->getQueries();
+
+        $queries[0]->saveResult(20);
+    }
+    
+    private function thenRequestHaveProperties(
+        bool $isComplete,
+        int $expectedQueriesLength,
+        $expectedQueries = array()
+    ) {
+        $this->assertEquals(
+            $isComplete,
+            $this->request->isComplete(),
+            'completion status does not match'
+        );
 
         $queries = $this->request->getQueries();
 
-        $this->assertCount(1, $queries);
+        $this->assertCount($expectedQueriesLength, $queries, 'queries queue length not matches');
 
-        $query = $queries[0];
-
-        $this->assertEquals($expectedQuery, $query);
-
-        $this->assertEquals(false, $this->request->isComplete());
-    }
-
-    public function testSuccessOfInitialQuery()
-    {
-        $range = new DateRange('2017-01-01', '2017-12-31');
-        $query = new Query($range);
-
-        $query->saveResult(20);
-
-        $this->request->reportQuery($query);
-
-        $this->assertEquals(true, $this->request->isComplete());
+        foreach ($expectedQueries as $index => $expectedQuery) {
+            $this->assertEquals($expectedQuery, $queries[$index], "Query {$index} not matches");
+        }
     }
 }

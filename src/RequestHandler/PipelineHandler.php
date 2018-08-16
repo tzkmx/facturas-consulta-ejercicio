@@ -2,40 +2,45 @@
 
 namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
+use Jefrancomix\ConsultaFacturas\Request\RequestForYearCompleteInterface;
 use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 
 class PipelineHandler implements HandlerInterface
 {
-    protected $addInitialRange;
-
     protected $pendingQueriesHandler;
 
     protected $sumIssuedBillsHandler;
 
-    protected $validateYearIsComplete;
-
     public function __construct(
-        AddInitialRangeToRequest $addInitialRange,
         PendingQueriesHandler $pendingQueriesHandler,
-        ValidateYearIsComplete $validateYearIsComplete,
         SumIssuedBillsHandler $sumIssuedBillsHandler
     ) {
-        $this->addInitialRange = $addInitialRange;
         $this->pendingQueriesHandler = $pendingQueriesHandler;
-        $this->validateYearIsComplete = $validateYearIsComplete;
         $this->sumIssuedBillsHandler = $sumIssuedBillsHandler;
     }
 
     public function handle(RequestForYearInterface $request): RequestForYearInterface
     {
-        $initialRequest = $this->addInitialRange->handle($request);
+        $processedRequest = $request;
 
-        $resolvedQueriesRequest = $this->pendingQueriesHandler->handle($initialRequest);
+        while (!$processedRequest instanceof RequestForYearCompleteInterface) {
+            try {
+                $processedRequest = $this->handlePendingRequest($processedRequest);
+                $processedRequest = $this->completeRequest($processedRequest);
+            } catch (\RuntimeException $e) {
+                error_log($e->getMessage(), 0);
+            }
+        }
 
-        $validatedCompleteYear = $this->validateYearIsComplete->handle($resolvedQueriesRequest);
+        return $processedRequest;
+    }
 
-        $resolvedRequest = $this->sumIssuedBillsHandler->handle($validatedCompleteYear);
-
-        return $resolvedRequest;
+    private function handlePendingRequest(RequestForYearInterface $requestForYear): RequestForYearInterface
+    {
+        return $this->pendingQueriesHandler->handle($requestForYear);
+    }
+    private function completeRequest(RequestForYearInterface $request): RequestForYearCompleteInterface
+    {
+        return $this->sumIssuedBillsHandler->handle($request);
     }
 }

@@ -4,15 +4,14 @@ namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use Jefrancomix\ConsultaFacturas\Query\QueryInterface;
 use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 
 class PendingQueriesHandler implements HandlerInterface
 {
-    protected $pendingQueries;
-    protected $successQueries;
-    protected $queriesFetched;
+    private $request;
 
-    protected $client;
+    private $client;
 
     public function __construct(Client $client)
     {
@@ -21,16 +20,13 @@ class PendingQueriesHandler implements HandlerInterface
 
     public function handle(RequestForYearInterface $request): RequestForYearInterface
     {
-        $this->pendingQueries = $request['pendingQueries'];
+        $this->request = $request;
 
-        $clientId = $request['clientId'];
+        $clientId = $request->clientId();
 
         foreach ($this->yieldPendingQueries() as $pendingQuery) {
             $this->doPendingQuery($pendingQuery, $clientId);
         }
-        $request['pendingQueries'] = $this->pendingQueries;
-        $request['successQueries'] = $this->successQueries;
-        $request['queriesFetched'] = $this->queriesFetched;
 
         return $request;
     }
@@ -38,15 +34,14 @@ class PendingQueriesHandler implements HandlerInterface
     protected function yieldPendingQueries()
     {
         $queriesIssued = 0;
-        while (count($this->pendingQueries) > 0) {
-            yield $this->pendingQueries[$queriesIssued++];
+        while (!$this->request->isComplete()) {
+            yield ($this->request->getQueries())[$queriesIssued++];
         }
-        $this->queriesFetched = $queriesIssued;
     }
 
-    protected function doPendingQuery($query, $clientId)
+    protected function doPendingQuery(QueryInterface $query, $clientId)
     {
-        $fullQuery = $query;
+        $fullQuery = $query->range()->toArray();
         $fullQuery['id'] = $clientId;
         $response = $this->client->get('/', [
             'query' => $fullQuery,
@@ -55,19 +50,10 @@ class PendingQueriesHandler implements HandlerInterface
         $this->handleResponse($query, $response);
     }
 
-    protected function handleResponse($resolvedQuery, Response $response)
+    protected function handleResponse(QueryInterface $query, Response $response)
     {
         $bodyResponse = $response->getBody()->getContents();
 
-        if ($bodyResponse !== 'Hay más de 100 resultados') {
-            $this->pendingQueries = array_filter($this->pendingQueries, function ($query) use ($resolvedQuery) {
-                return $query['start'] !== $resolvedQuery['start'] && $query['finish'] !== $resolvedQuery['finish'];
-            });
-            $this->successQueries[] = [
-                'range' => $resolvedQuery,
-                'tries' => 1,
-                'billsIssued' => (int)$bodyResponse,
-            ];
-        }
+        $query->saveResult($bodyResponse);
     }
 }

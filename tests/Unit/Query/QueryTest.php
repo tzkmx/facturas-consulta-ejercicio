@@ -4,15 +4,14 @@ namespace Unit\Query;
 
 use Jefrancomix\ConsultaFacturas\Dates\DateRange;
 use Jefrancomix\ConsultaFacturas\Query\Query;
-use Jefrancomix\ConsultaFacturas\Query\QueryInterface;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatus;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatusEndpointError;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatusPending;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatusRangeExceededThreshold;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatusResultOk;
+use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 use PHPUnit\Framework\TestCase;
-
-require __DIR__ .'/RequestSpy.php';
+use Prophecy\Argument;
 
 class QueryTest extends TestCase
 {
@@ -32,7 +31,8 @@ class QueryTest extends TestCase
             $status = new QueryStatusPending(),
             $error = ''
         );
-        // $this->andThenRequestShouldHaveReceivedReport();
+        $this->request->reportQuery(Argument::any())
+            ->shouldNotHaveBeenCalled();
     }
 
     public function testQueryResultOk()
@@ -82,22 +82,10 @@ class QueryTest extends TestCase
 
     private function givenInitialQuery()
     {
-        $this->request = new RequestSpy();
-        /*
-        $this->request = $this->prophesize(RequestForYearInterface::class)
-            ->reveal();
-        */
-        /*
-        $this->request = $this->createTestProxy(RequestForYear::class, [
-            'testing',
-            2017,
-            new QueryFactory(new DateRangeFactory())
-        ]);
-        */
+        $this->request = $this->prophesize(RequestForYearInterface::class);
 
         $this->range = new DateRange('2017-01-01', '2017-12-31');
-        $this->query = new Query($this->range, $this->request);
-        $this->assertNull($this->request->getQueryReceived());
+        $this->query = new Query($this->range, $this->request->reveal());
     }
     private function whenRangeInQueryIs(DateRange $rangeExpected)
     {
@@ -120,18 +108,6 @@ class QueryTest extends TestCase
     }
     private function andThenRequestShouldHaveReceivedReport()
     {
-        $queryReported = $this->request->getQueryReceived();
-        $this->assertInstanceOf(
-            QueryInterface::class,
-            $queryReported
-        );
-        $this->assertSame($this->query, $queryReported);
-        // $this->request->reportQuery()->shouldHaveBeenCalled();
-
-        /*
-        $this->request->expects($this->once())
-            ->method('reportQuery')
-            ->with($this->equalTo($this->query));
-        */
+        $this->request->reportQuery($this->query)->shouldHaveBeenCalled();
     }
 }

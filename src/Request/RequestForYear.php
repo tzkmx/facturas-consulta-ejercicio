@@ -46,8 +46,9 @@ class RequestForYear implements RequestForYearInterface
     public function reportQuery(QueryInterface $query)
     {
         foreach ($this->queries as $index => $savedQuery) {
-            // TODO: considerar Query::equals(otherQuery) con uniqid()
-            if ($query->range() === $savedQuery->range()) {
+            // TODO: chequeo redudante ya que la consulta recibida ya
+            // es el mismo objeto, aquí debería llamarse a partir rango?
+            if ($query === $savedQuery) {
                 $this->queries[$index] = $query;
             }
         }

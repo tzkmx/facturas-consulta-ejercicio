@@ -57,7 +57,7 @@ class RequestForYearTest extends TestCase
     private function whenInitialQueryIsWholeYear()
     {
         $expectedRange = new DateRange('2017-01-01', '2017-12-31');
-        $expectedQuery = new Query($expectedRange);
+        $expectedQuery = new Query($expectedRange, $this->request);
 
         $queries = $this->request->getQueries();
 

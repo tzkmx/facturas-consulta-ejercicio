@@ -2,8 +2,8 @@
 
 namespace Jefrancomix\ConsultaFacturas\Query;
 
-use Jefrancomix\ConsultaFacturas\Dates\DateRange;
 use Jefrancomix\ConsultaFacturas\Dates\DateRangeFactory;
+use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 
 class QueryFactory
 {
@@ -13,10 +13,10 @@ class QueryFactory
         $this->dateRangeFactory = $factory;
     }
 
-    public function buildInitialQueryFromYear(int $year)
+    public function buildInitialQueryFromYear(int $year, RequestForYearInterface $request)
     {
         $range = $this->dateRangeFactory->buildRangeForYear($year);
-        $query = new Query($range);
+        $query = new Query($range, $request);
         return $query;
     }
 }

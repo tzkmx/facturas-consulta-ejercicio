@@ -3,6 +3,7 @@
 namespace Jefrancomix\ConsultaFacturas\Query;
 
 use Jefrancomix\ConsultaFacturas\Dates\DateRange;
+use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 
 class Query implements QueryInterface
 {
@@ -11,14 +12,17 @@ class Query implements QueryInterface
     protected $result;
     protected $status;
     protected $error;
+    private $request;
 
-    public function __construct(DateRange $range)
+    public function __construct(DateRange $range, RequestForYearInterface $request)
     {
         $this->range = $range;
         $this->tries = 0;
         $this->result = 0;
         $this->status = new QueryStatusPending();
         $this->error = '';
+
+        $this->request = $request;
     }
 
     public function range(): DateRange
@@ -66,5 +70,6 @@ class Query implements QueryInterface
         } else {
             $this->status = new QueryStatusResultOk();
         }
+        $this->request->reportQuery($this);
     }
 }

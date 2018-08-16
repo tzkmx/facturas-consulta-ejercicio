@@ -19,13 +19,11 @@ class RequestForYearTest extends TestCase
     {
         $this->givenInitialQuery();
 
-        $expectedRange = new DateRange('2017-01-01', '2017-12-31');
-        $expectedQueries = array(new Query($expectedRange));
+        $this->whenInitialQueryIsWholeYear();
 
         $this->thenRequestHaveProperties(
             $isComplete = false,
-            $expectedQueriesLength = 1,
-            $expectedQueries
+            $expectedQueriesLength = 1
         );
     }
     
@@ -55,11 +53,21 @@ class RequestForYearTest extends TestCase
 
         $queries[0]->saveResult(20);
     }
+
+    private function whenInitialQueryIsWholeYear()
+    {
+        $expectedRange = new DateRange('2017-01-01', '2017-12-31');
+        $expectedQuery = new Query($expectedRange);
+
+        $queries = $this->request->getQueries();
+
+        $this->assertEquals($expectedQuery, $queries[0], "Initial Query mismatch");
+    }
     
     private function thenRequestHaveProperties(
         bool $isComplete,
         int $expectedQueriesLength,
-        $expectedQueries = array()
+        array $expectedQueries = array()
     ) {
         $this->assertEquals(
             $isComplete,

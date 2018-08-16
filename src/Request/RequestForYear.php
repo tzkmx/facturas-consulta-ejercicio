@@ -20,11 +20,14 @@ class RequestForYear implements RequestForYearInterface
         $this->year = $year;
         $this->queryFactory = $factory;
 
-        $firstQuery = $this->queryFactory->buildInitialQueryFromYear($year);
+        $firstQuery = $this->queryFactory->buildInitialQueryFromYear($year, $this);
 
         $this->queries = [$firstQuery];
     }
-
+    public function clientId(): string
+    {
+        return $this->clientId;
+    }
     public function isComplete(): bool
     {
         $invalidQueryFound = array_reduce(
@@ -34,7 +37,7 @@ class RequestForYear implements RequestForYearInterface
         );
         return !$invalidQueryFound;
     }
-    // $this->request->reportQuery($query);
+
     public function getQueries(): array
     {
         return $this->queries;
@@ -75,9 +78,5 @@ class RequestForYear implements RequestForYearInterface
             },
             false
         );
-    }
-
-    private function hasOverlapQueries(bool $found, QueryInterface $query)
-    {
     }
 }

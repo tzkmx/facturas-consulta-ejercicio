@@ -8,9 +8,6 @@ use Jefrancomix\ConsultaFacturas\Query\QueryFactory;
 use Jefrancomix\ConsultaFacturas\Request\RequestForYear;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group RequestHandlerRefactor
- */
 class SumBillsIssuedHandlerTest extends TestCase
 {
     private $request;

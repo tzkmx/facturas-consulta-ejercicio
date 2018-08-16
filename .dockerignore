@@ -1,0 +1,10 @@
+vendor/
+.git/
+.githooks/
+.idea/
+*.yml
+*.xml
+*.swp
+*.cache
+testCli.php
+

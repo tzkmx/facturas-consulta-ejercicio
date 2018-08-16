@@ -9,13 +9,15 @@ class DateRange
     protected $finishDate;
     protected $daysInRange;
 
-    public function __construct(string $start, string $end)
-    {
-        if ($start === $end) {
+    public function __construct(
+        \DateTimeInterface $start,
+        \DateTimeInterface $end
+    ) {
+        if ($start == $end) {
             throw new \LogicException('Las fechas de inicio y fin son iguales');
         }
-        $this->startDate = date_create_from_format(DATE_ISO8601, $start.'T00:00:00Z');
-        $this->endDate = date_create_from_format(DATE_ISO8601, $end.'T00:00:00Z');
+        $this->startDate = $start;
+        $this->endDate = $end;
         $daysInRange = $this->endDate->diff($this->startDate);
 
         $this->decoratedPeriod = new \DatePeriod($this->startDate, $daysInRange, $this->endDate);

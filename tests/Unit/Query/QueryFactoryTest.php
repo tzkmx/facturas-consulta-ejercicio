@@ -24,4 +24,31 @@ class QueryFactoryTest extends TestCase
 
         $this->assertEquals($expectedQuery, $query);
     }
+    public function testBuildQueriesSplittingProvidedOne()
+    {
+        $request = $this->createMock(RequestForYearInterface::class);
+
+        $dateRangeFactory = new DateRangeFactory();
+
+        $originalRange = $dateRangeFactory
+            ->buildFromStrings('2018-01-01', '2018-12-31');
+        $originalQuery = new Query($originalRange, $request);
+
+        $queryFactory = new QueryFactory($dateRangeFactory);
+
+        $expectedQueries = [];
+
+        $expectedRange1 = $dateRangeFactory
+            ->buildFromStrings('2018-01-01', '2018-07-02');
+        $expectedQueries[] = new Query($expectedRange1, $request);
+
+        $expectedRange2 = $dateRangeFactory
+            ->buildFromStrings('2018-07-03', '2018-12-31');
+        $expectedQueries[] = new Query($expectedRange2, $request);
+
+        $queriesBuilt = $queryFactory
+            ->buildQueriesSplitting($originalQuery, $request);
+
+        $this->assertEquals($expectedQueries, $queriesBuilt);
+    }
 }

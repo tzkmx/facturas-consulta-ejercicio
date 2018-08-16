@@ -3,16 +3,27 @@
 namespace Unit\Dates;
 
 use Jefrancomix\ConsultaFacturas\Dates\DateRange;
+use Jefrancomix\ConsultaFacturas\Dates\DateRangeFactory;
 use PHPUnit\Framework\TestCase;
 
 class DateRangeTest extends TestCase
 {
+    /**
+     * @var DateRangeFactory
+     */
+    private $factory;
+
+    public function setUp()
+    {
+        $this->factory = new DateRangeFactory();
+    }
+
     public function testGetRangeOfDays()
     {
         $start = '2018-01-01';
         $finish = '2018-01-03';
 
-        $range = new DateRange($start, $finish);
+        $range = $this->factory->buildFromStrings($start, $finish);
 
         $this->assertEquals(['start'=>$start, 'finish'=>$finish], $range->toArray());
     }
@@ -28,9 +39,9 @@ class DateRangeTest extends TestCase
         $start = '2018-01-01';
         $finish = '2018-01-03';
 
-        $range = new DateRange($start, $finish);
+        $range = $this->factory->buildFromStrings($start, $finish);
         
-        $rangeToCompare = new DateRange($otherStart, $otherEnd);
+        $rangeToCompare = $this->factory->buildFromStrings($otherStart, $otherEnd);
         
         $intersect = $range->intersects($rangeToCompare);
         
@@ -60,7 +71,7 @@ class DateRangeTest extends TestCase
      */
     public function testDatesInRange(string $start, string $end, int $expected)
     {
-        $range = new DateRange($start, $end);
+        $range = $this->factory->buildFromStrings($start, $end);
         $this->assertEquals($expected, $range->getDaysInRange());
     }
 

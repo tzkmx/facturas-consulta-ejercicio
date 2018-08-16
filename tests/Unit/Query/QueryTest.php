@@ -3,6 +3,7 @@
 namespace Unit\Query;
 
 use Jefrancomix\ConsultaFacturas\Dates\DateRange;
+use Jefrancomix\ConsultaFacturas\Dates\DateRangeFactory;
 use Jefrancomix\ConsultaFacturas\Query\Query;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatus;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatusEndpointError;
@@ -18,6 +19,11 @@ class QueryTest extends TestCase
     private $request;
     private $query;
     private $range;
+    private $dateRangeFactory;
+    public function setUp()
+    {
+        $this->dateRangeFactory = new DateRangeFactory();
+    }
 
     public function testQueryInitialized()
     {
@@ -84,7 +90,8 @@ class QueryTest extends TestCase
     {
         $this->request = $this->prophesize(RequestForYearInterface::class);
 
-        $this->range = new DateRange('2017-01-01', '2017-12-31');
+        $this->range = $this->dateRangeFactory
+            ->buildFromStrings('2017-01-01', '2017-12-31');
         $this->query = new Query($this->range, $this->request->reveal());
     }
     private function whenRangeInQueryIs(DateRange $rangeExpected)

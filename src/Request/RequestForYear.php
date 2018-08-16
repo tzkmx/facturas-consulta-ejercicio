@@ -4,6 +4,7 @@ namespace Jefrancomix\ConsultaFacturas\Request;
 
 use Jefrancomix\ConsultaFacturas\Query\QueryFactory;
 use Jefrancomix\ConsultaFacturas\Query\QueryInterface;
+use Jefrancomix\ConsultaFacturas\Query\QueryStatusRangeExceededThreshold;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatusResultOk;
 
 class RequestForYear implements RequestForYearInterface
@@ -45,12 +46,21 @@ class RequestForYear implements RequestForYearInterface
 
     public function reportQuery(QueryInterface $query)
     {
-        foreach ($this->queries as $index => $savedQuery) {
-            // TODO: chequeo redudante ya que la consulta recibida ya
-            // es el mismo objeto, aquí debería llamarse a partir rango?
-            if ($query === $savedQuery) {
-                $this->queries[$index] = $query;
-            }
+        switch (get_class($query->status())) {
+
+            case (QueryStatusRangeExceededThreshold::class):
+
+                $newQueries = $this->queryFactory
+                    ->buildQueriesSplitting($query, $this);
+
+                foreach ($newQueries as $newQuery) {
+                    $this->queries[] = $newQuery;
+                }
+
+                break;
+
+            default:
+                return;
         }
     }
 

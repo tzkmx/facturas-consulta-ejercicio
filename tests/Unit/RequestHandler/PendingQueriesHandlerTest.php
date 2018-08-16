@@ -5,21 +5,22 @@ namespace Unit\RequestHandler;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use Jefrancomix\ConsultaFacturas\Dates\DateRangeFactory;
 use Jefrancomix\ConsultaFacturas\Query\QueryFactory;
 use Jefrancomix\ConsultaFacturas\Request\RequestForYear;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PendingQueriesHandler;
 use PHPUnit\Framework\TestCase;
+use Spatie\Snapshots\MatchesSnapshots;
 
-/**
- * @group RequestHandlerRefactor
- */
 class PendingQueriesHandlerTest extends TestCase
 {
+    use MatchesSnapshots;
     private $request;
     private $solvedRequest;
     private $handler;
+    private $container;
 
     public function testHandleInitialQueryWithSuccess()
     {
@@ -36,6 +37,7 @@ class PendingQueriesHandlerTest extends TestCase
                 ['start' => '2017-01-01', 'finish' => '2017-12-31']
             ]
         );
+        $this->assertMatchesSnapshot($this->dumpHistory());
     }
 
     private function givenTheInitialRequest()
@@ -54,8 +56,17 @@ class PendingQueriesHandlerTest extends TestCase
         $mockHttpHandler = new MockHandler([
             new Response('200', [], '99'),
         ]);
+
+        $this->container = [];
+        $history = Middleware::history($this->container);
+
         $stack = HandlerStack::create($mockHttpHandler);
-        $client = new Client(['handler' => $stack]);
+        $stack->push($history);
+
+        $client = new Client([
+            'base_uri' => 'http://example.com/bills',
+            'handler' => $stack
+        ]);
 
         $this->handler = new PendingQueriesHandler($client);
     }
@@ -98,5 +109,25 @@ class PendingQueriesHandlerTest extends TestCase
         $this->assertEquals($expectedResults, $actualResults, 'Mismatch queries results');
         $this->assertEquals($expectedTries, $actualTries, 'Mismatch count of tries');
         $this->assertEquals($expectedDateRanges, $actualRanges, 'DateRanges out of sync');
+    }
+    private function dumpHistory()
+    {
+        $results = [];
+        foreach ($this->container as $transaction) {
+            $req = $transaction['request'];
+            $request = [
+                'host' => $req->getUri()->getHost(),
+                'path' => $req->getUri()->getPath(),
+                'query' => $req->getUri()->getQuery(),
+            ];
+            $res = $transaction['response'];
+            $response = $res->getBody().'';
+            $error = '';
+            if ($transaction['error']) {
+                $error = var_export($transaction['error'], true);
+            }
+            $results[] = compact('request', 'response', 'error');
+        }
+        return $results;
     }
 }

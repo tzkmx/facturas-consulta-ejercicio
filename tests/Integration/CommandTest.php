@@ -2,7 +2,6 @@
 
 namespace Integration;
 
-use Jefrancomix\ConsultaFacturas\RequestHandler\AddInitialRangeToRequest;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PendingQueriesHandler;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PipelineHandler;
 use Jefrancomix\ConsultaFacturas\RequestHandler\SumIssuedBillsHandler;
@@ -10,16 +9,14 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
-use Jefrancomix\ConsultaFacturas\RequestHandler\ValidateYearIsComplete;
 use Jefrancomix\ConsultaFacturas\Service\ResolveClientBillsForYear;
 use Jefrancomix\ConsultaFacturas\UserInterfaces\Command;
 use Jefrancomix\ConsultaFacturas\UserInterfaces\CommandInput;
+use Jefrancomix\ConsultaFacturas\Dates\DateRangeFactory;
+use Jefrancomix\ConsultaFacturas\Query\QueryFactory;
 use PHPUnit\Framework\TestCase;
 use Pimple\Container;
 
-/**
- * @group RequestHandlerRefactor
- */
 class CommandTest extends TestCase
 {
     public function testBasicCommandRun()
@@ -38,28 +35,30 @@ class CommandTest extends TestCase
             return new Client(['handler' => $c['handler.http.mock']]);
         };
 
-        $container['handler.service.initial'] = function ($c) {
-            return new AddInitialRangeToRequest();
-        };
         $container['handler.service.pendingQueries'] = function ($c) {
             return new PendingQueriesHandler($c['handler.http.client']);
         };
-        $container['handler.service.validateYear'] = function ($c) {
-            return new ValidateYearIsComplete();
-        };
+
         $container['handler.service.sumIssuedBills'] = function ($c) {
             return new SumIssuedBillsHandler();
         };
         $container['handler.service.pipeline'] = function ($c) {
             return new PipelineHandler(
-                $c['handler.service.initial'],
                 $c['handler.service.pendingQueries'],
-                $c['handler.service.validateYear'],
                 $c['handler.service.sumIssuedBills']
             );
         };
+        $container['factory.datesRanges'] = function ($c) {
+            return new DateRangeFactory();
+        };
+        $container['factory.query'] = function ($c) {
+            return new QueryFactory($c['factory.datesRanges']);
+        };
         $container['service.resolveIssuedBills'] = function ($c) {
-            return new ResolveClientBillsForYear($c['handler.service.pipeline']);
+            return new ResolveClientBillsForYear(
+                $c['handler.service.pipeline'],
+                $c['factory.query']
+            );
         };
 
         $command = new Command($container['service.resolveIssuedBills']);

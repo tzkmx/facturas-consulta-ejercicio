@@ -2,6 +2,8 @@
 
 namespace Integration;
 
+use Jefrancomix\ConsultaFacturas\Dates\DateRangeFactory;
+use Jefrancomix\ConsultaFacturas\Query\QueryFactory;
 use Jefrancomix\ConsultaFacturas\RequestHandler\AddInitialRangeToRequest;
 use Jefrancomix\ConsultaFacturas\RequestHandler\PendingQueriesHandler;
 use Jefrancomix\ConsultaFacturas\RequestHandler\SumIssuedBillsHandler;
@@ -14,9 +16,6 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 
-/**
- * @group RequestHandlerRefactor
- */
 class ResolveClientBillsForYearTest extends TestCase
 {
     public function testServiceReportsBillsAndQueriesFetched()
@@ -27,39 +26,27 @@ class ResolveClientBillsForYearTest extends TestCase
         $stack = HandlerStack::create($mockHttpHandler);
         $client = new Client(['handler' => $stack]);
 
-        $initialHandler = new AddInitialRangeToRequest();
         $pendingQueriesHandler = new PendingQueriesHandler($client);
-        $validateYearComplete = new ValidateYearIsComplete();
         $sumIssuedBillsHandler = new SumIssuedBillsHandler();
 
         $handler = new PipelineHandler(
-            $initialHandler,
             $pendingQueriesHandler,
-            $validateYearComplete,
             $sumIssuedBillsHandler
         );
-        $service = new ResolveClientBillsForYear($handler);
+        $dataRangeFactory = new DateRangeFactory();
+        $queryFactory = new QueryFactory($dataRangeFactory);
+        $service = new ResolveClientBillsForYear($handler, $queryFactory);
         $clientId = 'testing';
         $year = '2017';
         $report = $service->getReport($clientId, $year);
 
         $expectedReport = [
-            'clientId' => 'testing',
-            'year' => '2017',
             'isComplete' => true,
-            'queriesFetched' => 1,
-            'billsIssued' => 99,
-            'successQueries' => [
-                [
-                    'range' => [
-                        'start' => '2017-01-01',
-                        'finish' => '2017-12-31',
-                    ],
-                    'tries' => 1,
-                    'billsIssued' => 99,
-                ],
-            ],
+            'totalQueries' => 1,
+            'totalBills' => 99,
         ];
-        $this->assertEquals($expectedReport, $report);
+        $this->assertEquals($expectedReport['isComplete'], $report->isComplete());
+        $this->assertEquals($expectedReport['totalQueries'], $report->totalQueries());
+        $this->assertEquals($expectedReport['totalBills'], $report->totalBills());
     }
 }

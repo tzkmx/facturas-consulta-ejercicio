@@ -18,11 +18,11 @@ class Command
         $clientId = $input->getArgument('clientId');
         $year = $input->getArgument('year');
 
-        $rawReport = $this->resolveClientBillsService->getReport($clientId, $year);
+        $completedReport = $this->resolveClientBillsService->getReport($clientId, $year);
 
-        if ($rawReport['clientId'] === $clientId) {
-            $billsIssued = $rawReport['billsIssued'];
-            $queriesFetched = $rawReport['queriesFetched'];
+        if ($completedReport->clientId() === $clientId) {
+            $billsIssued = $completedReport->totalBills();
+            $queriesFetched = $completedReport->totalQueries();
             return "Para cliente con Id: {$clientId} " .
                 "se emitieron {$billsIssued} facturas en {$year}. " .
                 "El proceso requirió {$queriesFetched} consulta remota.";

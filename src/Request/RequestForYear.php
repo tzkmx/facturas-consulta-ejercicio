@@ -11,16 +11,19 @@ class RequestForYear implements RequestForYearInterface
 {
     protected $clientId;
     protected $year;
+    private $endpoint;
 
     protected $queries;
     protected $queryFactory;
 
     private $errorQueries;
 
-    public function __construct(string $clientId, int $year, QueryFactory $factory)
+    public function __construct(string $clientId, int $year, QueryFactory $factory, string $endpoint)
     {
         $this->clientId = $clientId;
         $this->year = $year;
+        $this->endpoint = $endpoint;
+
         $this->queryFactory = $factory;
 
         $firstQuery = $this->queryFactory->buildInitialQueryFromYear($year, $this);
@@ -31,6 +34,10 @@ class RequestForYear implements RequestForYearInterface
     public function clientId(): string
     {
         return $this->clientId;
+    }
+    public function endpoint(): string
+    {
+        return $this->endpoint;
     }
     public function isComplete(): bool
     {

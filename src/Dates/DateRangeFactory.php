@@ -50,12 +50,16 @@ class DateRangeFactory
 
         $firstHalf = new \DatePeriod($start, $interval, 1);
 
-        $period1Dates = iterator_to_array($firstHalf);
+        list(, $endFirstHalf) = iterator_to_array($firstHalf);
 
-        $period2Start = \DateTimeImmutable::createFromMutable($period1Dates[1])
-            ->add(new \DateInterval('P1D'));
+        $period2Start = (
+            get_class($endFirstHalf) === 'DateTimeImmutable'
+        )
+            ? $endFirstHalf->add(new \DateInterval('P1D'))
+            : \DateTimeImmutable::createFromMutable($endFirstHalf)
+                ->add(new \DateInterval('P1D'));
 
-        $firstHalfRange = new DateRange($start, $period1Dates[1]);
+        $firstHalfRange = new DateRange($start, $endFirstHalf);
         $secondHalfRange = new DateRange($period2Start, $end);
         return [ $firstHalfRange, $secondHalfRange ];
     }

@@ -17,8 +17,9 @@ class Command
     {
         $clientId = $input->getArgument('clientId');
         $year = $input->getArgument('year');
+        $endpoint = $input->getArgument('endpoint');
 
-        $completedReport = $this->resolveClientBillsService->getReport($clientId, $year);
+        $completedReport = $this->resolveClientBillsService->getReport($clientId, $year, $endpoint);
 
         if ($completedReport->clientId() === $clientId) {
             $billsIssued = $completedReport->totalBills();

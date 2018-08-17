@@ -19,9 +19,9 @@ class ResolveClientBillsForYear
         $this->queryFactory = $queryFactory;
     }
 
-    public function getReport($clientId, $year)
+    public function getReport($clientId, $year, $endpoint)
     {
-        $request = new RequestForYear($clientId, $year, $this->queryFactory);
+        $request = new RequestForYear($clientId, $year, $this->queryFactory, $endpoint);
 
         $report = $this->pipelineHandler->handle($request);
 

@@ -5,6 +5,7 @@ namespace Jefrancomix\ConsultaFacturas\RequestHandler;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Jefrancomix\ConsultaFacturas\Query\QueryInterface;
+use Jefrancomix\ConsultaFacturas\Query\QueryStatusPending;
 use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 
 class PendingQueriesHandler implements HandlerInterface
@@ -23,9 +24,10 @@ class PendingQueriesHandler implements HandlerInterface
         $this->request = $request;
 
         $clientId = $request->clientId();
+        $endpoint = $request->endpoint();
 
         foreach ($this->yieldPendingQueries() as $pendingQuery) {
-            $this->doPendingQuery($pendingQuery, $clientId);
+            $this->doPendingQuery($pendingQuery, $clientId, $endpoint);
         }
 
         return $request;
@@ -33,17 +35,27 @@ class PendingQueriesHandler implements HandlerInterface
 
     protected function yieldPendingQueries()
     {
-        $queriesIssued = 0;
         while (!$this->request->isComplete()) {
-            yield ($this->request->getQueries())[$queriesIssued++];
+            $queries = $this->request->getQueries();
+
+            $pend = array_slice(array_filter(
+                $queries,
+                function ($query) {
+                    return $query->status() instanceof QueryStatusPending;
+                }
+            ), 0);
+
+            $query = $pend[0];
+
+            yield $query;
         }
     }
 
-    protected function doPendingQuery(QueryInterface $query, $clientId)
+    protected function doPendingQuery(QueryInterface $query, $clientId, $endpoint)
     {
         $fullQuery = $query->range()->toArray();
         $fullQuery['id'] = $clientId;
-        $response = $this->client->get('/', [
+        $response = $this->client->get($endpoint, [
             'query' => $fullQuery,
         ]);
 

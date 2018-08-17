@@ -62,7 +62,7 @@ class Query implements QueryInterface
         $this->tries++;
         $this->result = (int)$result;
 
-        if ($result === 'Hay más de 100 resultados') {
+        if ($result === '"Hay más de 100 resultados"') {
             $this->status = new QueryStatusRangeExceededThreshold();
         } elseif (strpos($result, 'Error: ') === 0) {
             $this->status = new QueryStatusEndpointError();

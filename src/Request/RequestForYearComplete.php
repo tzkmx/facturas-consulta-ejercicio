@@ -16,11 +16,14 @@ class RequestForYearComplete implements RequestForYearCompleteInterface
     {
         $this->requestForYear = $requestForYear;
 
-        $this->processQueries($requestForYear->getQueries());
+        $this->processQueries(
+            $requestForYear->getQueries(),
+            $requestForYear->getErrorQueries()
+        );
     }
-    private function processQueries(array $queries)
+    private function processQueries(array $queries, array $errorQueries)
     {
-        $totals = array_reduce(
+        $okTotals = array_reduce(
             $queries,
             function ($accumulator, QueryInterface $query) {
                 list(
@@ -37,8 +40,13 @@ class RequestForYearComplete implements RequestForYearCompleteInterface
                 self::BILLS => 0,
             ]
         );
-        $this->totalBills = $totals[self::BILLS];
-        $this->totalQueries = $totals[self::QUERIES];
+        $this->totalBills = $okTotals[self::BILLS];
+
+        $countErrorQueries = array_sum(array_map(function ($query) {
+            return $query->tries();
+        }, $errorQueries));
+
+        $this->totalQueries = $okTotals[self::QUERIES] + $countErrorQueries;
     }
 
     public function totalBills(): int
@@ -64,6 +72,11 @@ class RequestForYearComplete implements RequestForYearCompleteInterface
     public function getQueries(): array
     {
         return $this->requestForYear->getQueries();
+    }
+
+    public function getErrorQueries(): array
+    {
+        return $this->requestForYear->getErrorQueries();
     }
 
     public function reportQuery(QueryInterface $query)

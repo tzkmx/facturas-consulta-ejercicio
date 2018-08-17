@@ -15,6 +15,8 @@ class RequestForYear implements RequestForYearInterface
     protected $queries;
     protected $queryFactory;
 
+    private $errorQueries;
+
     public function __construct(string $clientId, int $year, QueryFactory $factory)
     {
         $this->clientId = $clientId;
@@ -24,6 +26,7 @@ class RequestForYear implements RequestForYearInterface
         $firstQuery = $this->queryFactory->buildInitialQueryFromYear($year, $this);
 
         $this->queries = [$firstQuery];
+        $this->errorQueries = [];
     }
     public function clientId(): string
     {
@@ -33,8 +36,7 @@ class RequestForYear implements RequestForYearInterface
     {
         $invalidQueryFound = array_reduce(
             $this->queries,
-            [$this, 'aQueryIsInvalid'],
-            false
+            [$this, 'aQueryIsInvalid']
         );
         return !$invalidQueryFound;
     }
@@ -42,6 +44,11 @@ class RequestForYear implements RequestForYearInterface
     public function getQueries(): array
     {
         return $this->queries;
+    }
+
+    public function getErrorQueries(): array
+    {
+        return $this->errorQueries;
     }
 
     public function reportQuery(QueryInterface $query)
@@ -53,9 +60,18 @@ class RequestForYear implements RequestForYearInterface
                 $newQueries = $this->queryFactory
                     ->buildQueriesSplitting($query, $this);
 
-                foreach ($newQueries as $newQuery) {
-                    $this->queries[] = $newQuery;
-                }
+                $this->errorQueries[] = $query;
+
+                $this->queries = array_reduce(
+                    $this->queries,
+                    function ($accumulator, $oldQuery) use ($query) {
+                        if ($oldQuery !== $query) {
+                            $accumulator[] = $oldQuery;
+                        }
+                        return $accumulator;
+                    },
+                    $newQueries
+                );
 
                 break;
 
@@ -64,7 +80,7 @@ class RequestForYear implements RequestForYearInterface
         }
     }
 
-    private function aQueryIsInvalid(bool $init, QueryInterface $query)
+    private function aQueryIsInvalid($init, QueryInterface $query)
     {
         if ($init) { // ya encontramos consulta incompleta o no válida
             return true;
@@ -74,7 +90,7 @@ class RequestForYear implements RequestForYearInterface
         }
         return array_reduce(
             $this->queries,
-            function (bool $found, QueryInterface $queryToCompare) use ($query) {
+            function ($found, QueryInterface $queryToCompare) use ($query) {
                 if ($found) {
                     return true;
                 }
@@ -86,8 +102,7 @@ class RequestForYear implements RequestForYearInterface
                 if ($range->intersects($rangeToCompare)) {
                     return true;
                 }
-            },
-            false
+            }
         );
     }
 }

@@ -17,10 +17,14 @@ class DateRange
             throw new \LogicException('Las fechas de inicio y fin son iguales');
         }
         $this->startDate = $start;
-        $this->endDate = $end;
-        $daysInRange = $this->endDate->diff($this->startDate);
+        $this->finishDate = $end;
+        $daysInRange = $this->finishDate->diff($this->startDate);
 
-        $this->decoratedPeriod = new \DatePeriod($this->startDate, $daysInRange, $this->endDate);
+        $this->decoratedPeriod = new \DatePeriod(
+            $this->startDate,
+            $daysInRange,
+            $this->finishDate
+        );
         $this->daysInRange = $daysInRange->days + 1;
     }
 

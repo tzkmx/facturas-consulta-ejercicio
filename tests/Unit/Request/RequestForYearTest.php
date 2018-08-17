@@ -55,11 +55,10 @@ class RequestForYearTest extends TestCase
 
         $this->thenRequestHaveProperties(
             $isComplete = false,
-            $expectedQueriesLength = 3
+            $expectedQueriesLength = 2
         );
 
         $this->andThenExpectedRangesOfQueriesShouldBe([
-            ['2017-01-01', '2017-12-31'],
             ['2017-01-01', '2017-07-02'],
             ['2017-07-03', '2017-12-31']
         ]);
@@ -68,8 +67,12 @@ class RequestForYearTest extends TestCase
 
         $this->thenRequestHaveProperties(
             $isComplete = true,
-            $expectedQueriesLength = 3
+            $expectedQueriesLength = 2
         );
+
+        $this->andThenErrorQueriesRangesShouldBe([
+            ['2017-01-01', '2017-12-31']
+        ]);
     }
 
     private function givenInitialQuery()
@@ -106,10 +109,8 @@ class RequestForYearTest extends TestCase
     private function whenLesserRangesSucceed()
     {
         $queries = $this->request->getQueries();
-        var_dump($queries);
+        $queries[0]->saveResult(90);
         $queries[1]->saveResult(90);
-        $queries[2]->saveResult(90);
-        var_dump($queries);
     }
     
     private function thenRequestHaveProperties(
@@ -129,6 +130,19 @@ class RequestForYearTest extends TestCase
     private function andThenExpectedRangesOfQueriesShouldBe(array $ranges)
     {
         $queries = $this->request->getQueries();
+
+        foreach ($ranges as $index => $range) {
+            $this->assertEquals(
+                $range,
+                array_values($queries[$index]->range()->toArray()),
+                "Query {$index} not matches"
+            );
+        }
+    }
+
+    private function andThenErrorQueriesRangesShouldBe(array $ranges)
+    {
+        $queries = $this->request->getErrorQueries();
 
         foreach ($ranges as $index => $range) {
             $this->assertEquals(

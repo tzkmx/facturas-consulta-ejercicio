@@ -13,4 +13,6 @@ interface RequestForYearInterface
     public function getQueries(): array;
 
     public function reportQuery(QueryInterface $query);
+
+    public function getErrorQueries(): array;
 }

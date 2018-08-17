@@ -18,6 +18,8 @@ class RequestForYear implements RequestForYearInterface
 
     private $errorQueries;
 
+    private $memoizedCompletionStatus;
+
     public function __construct(string $clientId, int $year, QueryFactory $factory, string $endpoint)
     {
         $this->clientId = $clientId;
@@ -30,6 +32,8 @@ class RequestForYear implements RequestForYearInterface
 
         $this->queries = [$firstQuery];
         $this->errorQueries = [];
+
+        $this->memoizedCompletionStatus = null;
     }
     public function clientId(): string
     {
@@ -41,11 +45,15 @@ class RequestForYear implements RequestForYearInterface
     }
     public function isComplete(): bool
     {
-        $invalidQueryFound = array_reduce(
-            $this->queries,
-            [$this, 'aQueryIsInvalid']
-        );
-        return !$invalidQueryFound;
+        if (is_null($this->memoizedCompletionStatus)) {
+            $invalidQueryFound = array_reduce(
+                $this->queries,
+                [$this, 'aQueryIsInvalid']
+            );
+            $this->memoizedCompletionStatus = !$invalidQueryFound;
+        }
+
+        return $this->memoizedCompletionStatus;
     }
 
     public function getQueries(): array
@@ -60,6 +68,7 @@ class RequestForYear implements RequestForYearInterface
 
     public function reportQuery(QueryInterface $query)
     {
+        $this->memoizedCompletionStatus = null;
         switch (get_class($query->status())) {
 
             case (QueryStatusRangeExceededThreshold::class):

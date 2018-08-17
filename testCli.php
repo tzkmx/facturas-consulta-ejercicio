@@ -26,11 +26,18 @@ $service = new ResolveClientBillsForYear($handler, $queriesFactory);
 
 $command = new Command($service);
 
-$input = new CommandInput();
+if (count($argv) > 2) {
+    $fill = array_fill(0, 2, '');
+    $args = array_slice(array_merge(array_slice($argv, 1, 3), $fill), 0, 3);
 
-$input->clientId = getenv('clientId');
-$input->year = getenv('year');
-$input->endpoint = getenv('endpoint');
-$output = $command->run($input);
+    try {
+        $input = new CommandInput(...$args);
+    } catch (InvalidArgumentException $e) {
+        echo "Error en argumentos:\n{$e->getMessage()}\n";
+        exit(1);
+    }
 
-echo $output;
+    $output = $command->run($input);
+
+    echo $output;
+}

@@ -24,9 +24,13 @@ class Command
         if ($completedReport->clientId() === $clientId) {
             $billsIssued = $completedReport->totalBills();
             $queriesFetched = $completedReport->totalQueries();
+            $numberLegend = $queriesFetched > 1
+                ? "consultas remotas"
+                : "consulta remota";
+
             return "Para cliente con Id: {$clientId} " .
                 "se emitieron {$billsIssued} facturas en {$year}. " .
-                "El proceso requirió {$queriesFetched} consulta remota.";
+                "El proceso requirió {$queriesFetched} {$numberLegend}.\n";
         }
     }
 }

@@ -18,10 +18,12 @@ por períodos menores.
 ## Ejecución
 
 Actualmente se proporciona un cliente de prueba en línea de comandos,
-se ejecuta pasando variables de entorno a `testCli.php`
-    
+se ejecuta pasando como argumentos a `testCli.php` el id, el año y
+el extremo al que se realizarán las consultas
 
-    clientId=ID-DEL-CLIENTE year=____ endpoint=http://example.com php testCli.php
+    php testCli.php ID-DEL-CLIENTE anio http://example.com
+
+En caso fallido el comando requiere los argumentos en el orden indicado.
 
 Se require previamente que se instalen las dependencias con composer:
 

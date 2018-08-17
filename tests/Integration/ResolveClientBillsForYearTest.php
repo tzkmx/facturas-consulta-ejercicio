@@ -38,7 +38,8 @@ class ResolveClientBillsForYearTest extends TestCase
         $service = new ResolveClientBillsForYear($handler, $queryFactory);
         $clientId = 'testing';
         $year = '2017';
-        $report = $service->getReport($clientId, $year);
+        $endpoint = 'http://example.com/endpoint';
+        $report = $service->getReport($clientId, $year, $endpoint);
 
         $expectedReport = [
             'isComplete' => true,

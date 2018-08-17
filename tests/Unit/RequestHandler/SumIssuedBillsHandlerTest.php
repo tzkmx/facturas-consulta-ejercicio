@@ -15,7 +15,12 @@ class SumBillsIssuedHandlerTest extends TestCase
     {
         $dateRangesFactory = new DateRangeFactory();
         $queryFactory = new QueryFactory($dateRangesFactory);
-        $this->request = new RequestForYear('testing', 2017, $queryFactory);
+        $this->request = new RequestForYear(
+          'testing',
+          2017,
+          $queryFactory,
+          'http://example.com/endpoint'
+        );
         $queries = $this->request->getQueries();
         $queries[0]->saveResult(99);
 

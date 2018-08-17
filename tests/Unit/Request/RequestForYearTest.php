@@ -79,7 +79,12 @@ class RequestForYearTest extends TestCase
     {
         $this->queriesFactory = new QueryFactory($this->dateRangesFactory);
 
-        $this->request = new RequestForYear('testing', 2017, $this->queriesFactory);
+        $this->request = new RequestForYear(
+          'testing',
+          2017,
+          $this->queriesFactory,
+          "http://example.com/"
+        );
     }
 
     private function whenInitialQuerySucceded()
@@ -103,7 +108,7 @@ class RequestForYearTest extends TestCase
     private function whenWholeYearQueryExceedsThreshold()
     {
         $queries = $this->request->getQueries();
-        $queries[0]->saveResult('Hay más de 100 resultados');
+        $queries[0]->saveResult('"Hay más de 100 resultados"');
     }
 
     private function whenLesserRangesSucceed()

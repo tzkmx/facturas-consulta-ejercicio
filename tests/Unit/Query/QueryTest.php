@@ -60,7 +60,7 @@ class QueryTest extends TestCase
     {
         $this->givenInitialQuery();
 
-        $this->whenQueryReceivesResult('Hay más de 100 resultados');
+        $this->whenQueryReceivesResult('"Hay más de 100 resultados"');
 
         $this->thenQueryShouldHaveProperties(
             $tries = 1,

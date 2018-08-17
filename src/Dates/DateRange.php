@@ -9,6 +9,9 @@ class DateRange
     protected $finishDate;
     protected $daysInRange;
 
+    private $timestampStart;
+    private $timestampEnd;
+
     public function __construct(
         \DateTimeInterface $start,
         \DateTimeInterface $end
@@ -26,6 +29,9 @@ class DateRange
             $this->finishDate
         );
         $this->daysInRange = $daysInRange->days + 1;
+
+        $this->timestampStart = $start->getTimestamp();
+        $this->timestampEnd = $end->getTimestamp();
     }
 
     public function toArray()
@@ -53,8 +59,8 @@ class DateRange
 
     public function intersects(DateRange $otherDateRange): bool
     {
-        $thisStart = intval($this->getStartDate('U'));
-        $thisEnd = intval($this->getEndDate('U'));
+        $thisStart = $this->timestampStart;
+        $thisEnd = $this->timestampEnd;
 
         $otherStart = $otherDateRange->getStartDate()->getTimestamp();
 

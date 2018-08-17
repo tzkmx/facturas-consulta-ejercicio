@@ -4,7 +4,7 @@
     'request' =>
     array(
       'host' => 'example.com',
-      'path' => '/',
+      'path' => '/endpoint',
       'query' => 'start=2017-01-01&finish=2017-12-31&id=testing',
     ),
     'response' => '99',

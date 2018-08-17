@@ -63,20 +63,16 @@ class CommandTest extends TestCase
 
         $command = new Command($container['service.resolveIssuedBills']);
 
-        $inputArgsObj = new CommandInput();
-
-        $inputArgs = [ // simulation of $argv
+        $inputArgsObj = new CommandInput(
             'testing',
             '2017',
-        ];
-
-        $inputArgsObj->clientId = $inputArgs[0];
-        $inputArgsObj->year = $inputArgs[1];
+            'http://example.com/endpoint'
+        );
 
         $output = $command->run($inputArgsObj);
 
-        $expectedOutput = 'Para cliente con Id: testing se emitieron 99 facturas en 2017. ' .
-            'El proceso requirió 1 consulta remota.';
+        $expectedOutput = "Para cliente con Id: testing se emitieron 99 facturas en 2017. " .
+            "El proceso requirió 1 consulta remota.\n";
 
         $this->assertEquals($expectedOutput, $output);
     }

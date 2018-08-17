@@ -35,6 +35,9 @@ if (count($argv) > 2) {
     } catch (InvalidArgumentException $e) {
         echo "Error en argumentos:\n{$e->getMessage()}\n";
         exit(1);
+    } catch (ArgumentCountError $e) {
+        echo "Te faltan argumentos, la sintaxis correcta es\n\n",
+          "php ", __FILE__, " ID-DE-CLIENTE año http://example.com/endpoint\n";
     }
 
     $output = $command->run($input);

@@ -44,7 +44,12 @@ class PendingQueriesHandlerTest extends TestCase
     {
         $dateRangesFactory = new DateRangeFactory();
         $queryFactory = new QueryFactory($dateRangesFactory);
-        $this->request = new RequestForYear('testing', 2017, $queryFactory);
+        $this->request = new RequestForYear(
+            'testing',
+            2017,
+            $queryFactory,
+            'http://example.com/endpoint'
+        );
         $initialQueries = $this->request->getQueries();
         $this->assertEquals(
             ['start' => '2017-01-01', 'finish' => '2017-12-31'],

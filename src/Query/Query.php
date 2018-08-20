@@ -12,9 +12,9 @@ class Query implements QueryInterface
     protected $result;
     protected $status;
     protected $error;
-    private $request;
+    private $queryString;
 
-    public function __construct(DateRange $range, RequestForYearInterface $request)
+    public function __construct(DateRange $range, string $clientId)
     {
         $this->range = $range;
         $this->tries = 0;
@@ -22,7 +22,9 @@ class Query implements QueryInterface
         $this->status = new QueryStatusPending();
         $this->error = '';
 
-        $this->request = $request;
+        $args = $range->toArray();
+        $args['id'] = $clientId;
+        $this->queryString = http_build_query($args);
     }
 
     public function range(): DateRange
@@ -70,6 +72,10 @@ class Query implements QueryInterface
         } else {
             $this->status = new QueryStatusResultOk();
         }
-        $this->request->reportQuery($this);
+    }
+
+    public function toQueryString(): string
+    {
+        return $this->queryString;
     }
 }

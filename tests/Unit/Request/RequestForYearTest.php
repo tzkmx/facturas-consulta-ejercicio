@@ -28,7 +28,7 @@ class RequestForYearTest extends TestCase
     {
         $this->givenInitialQuery();
 
-        $this->whenInitialQueryIsWholeYear();
+        $this->whenInitialQueryStringIsWholeYear();
 
         $this->thenRequestHaveProperties(
             $isComplete = false,
@@ -85,6 +85,7 @@ class RequestForYearTest extends TestCase
           $this->queriesFactory,
           "http://example.com/"
         );
+        $this->assertCount(1, $this->request->getQueries());
     }
 
     private function whenInitialQuerySucceded()
@@ -92,23 +93,29 @@ class RequestForYearTest extends TestCase
         $queries = $this->request->getQueries();
 
         $queries[0]->saveResult(20);
+
+        $this->request->updateStatus();
     }
 
-    private function whenInitialQueryIsWholeYear()
+    private function whenInitialQueryStringIsWholeYear()
     {
-        $expectedRange = $this->dateRangesFactory
-            ->buildFromStrings('2017-01-01', '2017-12-31');
-        $expectedQuery = new Query($expectedRange, $this->request);
+        $expectedQueryString = 'start=2017-01-01&finish=2017-12-31&id=testing';
 
         $queries = $this->request->getQueries();
 
-        $this->assertEquals($expectedQuery, $queries[0], "Initial Query mismatch");
+        $this->assertEquals(
+            $expectedQueryString,
+            $queries[0]->toQueryString(),
+            "Initial Query mismatch"
+        );
     }
 
     private function whenWholeYearQueryExceedsThreshold()
     {
         $queries = $this->request->getQueries();
         $queries[0]->saveResult('"Hay más de 100 resultados"');
+
+        $this->request->updateStatus();
     }
 
     private function whenLesserRangesSucceed()
@@ -116,6 +123,8 @@ class RequestForYearTest extends TestCase
         $queries = $this->request->getQueries();
         $queries[0]->saveResult(90);
         $queries[1]->saveResult(90);
+
+        $this->request->updateStatus();
     }
     
     private function thenRequestHaveProperties(

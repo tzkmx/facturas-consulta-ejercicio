@@ -79,8 +79,8 @@ class RequestForYearComplete implements RequestForYearCompleteInterface
         return $this->requestForYear->getErrorQueries();
     }
 
-    public function reportQuery(QueryInterface $query)
+    public function updateStatus(): bool
     {
-        throw new \LogicException('Query Complete, shouldn\'t receive more reports');
+        return false;
     }
 }

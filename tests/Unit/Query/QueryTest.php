@@ -10,13 +10,10 @@ use Jefrancomix\ConsultaFacturas\Query\QueryStatusEndpointError;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatusPending;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatusRangeExceededThreshold;
 use Jefrancomix\ConsultaFacturas\Query\QueryStatusResultOk;
-use Jefrancomix\ConsultaFacturas\Request\RequestForYearInterface;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 
 class QueryTest extends TestCase
 {
-    private $request;
     private $query;
     private $range;
     private $dateRangeFactory;
@@ -37,8 +34,6 @@ class QueryTest extends TestCase
             $status = new QueryStatusPending(),
             $error = ''
         );
-        $this->request->reportQuery(Argument::any())
-            ->shouldNotHaveBeenCalled();
     }
 
     public function testQueryResultOk()
@@ -53,7 +48,6 @@ class QueryTest extends TestCase
             $status = new QueryStatusResultOk(),
             $error = ''
         );
-        $this->andThenRequestShouldHaveReceivedReport();
     }
 
     public function testQueryRangeExceededThreshold()
@@ -68,7 +62,6 @@ class QueryTest extends TestCase
             $status = new QueryStatusRangeExceededThreshold(),
             $error = ''
         );
-        $this->andThenRequestShouldHaveReceivedReport();
     }
 
     public function testQueryRangeError()
@@ -83,16 +76,15 @@ class QueryTest extends TestCase
             $status = new QueryStatusEndpointError(),
             $error = 'Error: Endpoint error'
         );
-        $this->andThenRequestShouldHaveReceivedReport();
     }
 
     private function givenInitialQuery()
     {
-        $this->request = $this->prophesize(RequestForYearInterface::class);
+        $clientId = 'testing';
 
         $this->range = $this->dateRangeFactory
             ->buildFromStrings('2017-01-01', '2017-12-31');
-        $this->query = new Query($this->range, $this->request->reveal());
+        $this->query = new Query($this->range, $clientId);
     }
     private function whenRangeInQueryIs(DateRange $rangeExpected)
     {
@@ -112,9 +104,5 @@ class QueryTest extends TestCase
         $this->assertEquals($result, $this->query->result(), "Result mismatch");
         $this->assertEquals($status, $this->query->status(), "Status mismatch");
         $this->assertEquals($error, $this->query->error(), "Error mismatch");
-    }
-    private function andThenRequestShouldHaveReceivedReport()
-    {
-        $this->request->reportQuery($this->query)->shouldHaveBeenCalled();
     }
 }

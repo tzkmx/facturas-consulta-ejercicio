@@ -12,4 +12,5 @@ interface QueryInterface
     public function status(): QueryStatus;
     public function error(): string;
     public function saveResult(string $result);
+    public function toQueryString(): string;
 }

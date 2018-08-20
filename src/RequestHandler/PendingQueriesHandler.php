@@ -23,43 +23,45 @@ class PendingQueriesHandler implements HandlerInterface
     {
         $this->request = $request;
 
-        $clientId = $request->clientId();
         $endpoint = $request->endpoint();
 
-        foreach ($this->yieldPendingQueries() as $pendingQuery) {
-            $this->doPendingQuery($pendingQuery, $clientId, $endpoint);
+        while (!$this->request->isComplete()) {
+            $this->doPendingQueries(
+                $this->request->getQueries(),
+                $endpoint
+            );
+            $this->request->updateStatus();
         }
 
         return $request;
     }
 
-    protected function yieldPendingQueries()
+    protected function doPendingQueries(array $queries, $endpoint)
     {
-        while (!$this->request->isComplete()) {
-            $queries = $this->request->getQueries();
-
-            $pend = array_slice(array_filter(
-                $queries,
-                function ($query) {
-                    return $query->status() instanceof QueryStatusPending;
+        return array_reduce(
+            $queries,
+            function ($resolvedQueries, QueryInterface $query) use ($endpoint) {
+                if (! $query->status() instanceof QueryStatusPending) {
+                    return $resolvedQueries;
                 }
-            ), 0);
 
-            $query = $pend[0];
+                $resolved = $this->doPendingQuery($query, $endpoint);
 
-            yield $query;
-        }
+                $resolvedQueries[] = $resolved;
+
+                return $resolvedQueries;
+            },
+            []
+        );
     }
 
-    protected function doPendingQuery(QueryInterface $query, $clientId, $endpoint)
+    protected function doPendingQuery(QueryInterface $query, $endpoint)
     {
-        $fullQuery = $query->range()->toArray();
-        $fullQuery['id'] = $clientId;
-        $response = $this->client->get($endpoint, [
-            'query' => $fullQuery,
-        ]);
+        $queryString = $query->toQueryString();
 
-        $this->handleResponse($query, $response);
+        $response = $this->client->get("{$endpoint}?{$queryString}");
+
+        return $this->handleResponse($query, $response);
     }
 
     protected function handleResponse(QueryInterface $query, Response $response)
@@ -67,5 +69,7 @@ class PendingQueriesHandler implements HandlerInterface
         $bodyResponse = $response->getBody()->getContents();
 
         $query->saveResult($bodyResponse);
+
+        return $query;
     }
 }

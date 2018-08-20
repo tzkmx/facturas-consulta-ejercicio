@@ -12,27 +12,27 @@ class QueryFactoryTest extends TestCase
 {
     public function testBuildQueryForWholeYear()
     {
-        $request = $this->createMock(RequestForYearInterface::class);
+        $clientId = 'testing';
 
         $dateRangeFactory = new DateRangeFactory();
         $queryFactory = new QueryFactory($dateRangeFactory);
 
         $expectedDateRange = $dateRangeFactory->buildRangeForYear(2017);
-        $expectedQuery = new Query($expectedDateRange, $request);
+        $expectedQuery = new Query($expectedDateRange, $clientId);
 
-        $query = $queryFactory->buildInitialQueryFromYear(2017, $request);
+        $query = $queryFactory->buildInitialQueryFromYear(2017, $clientId);
 
         $this->assertEquals($expectedQuery, $query);
     }
     public function testBuildQueriesSplittingProvidedOne()
     {
-        $request = $this->createMock(RequestForYearInterface::class);
+        $clientId = 'testing';
 
         $dateRangeFactory = new DateRangeFactory();
 
         $originalRange = $dateRangeFactory
             ->buildFromStrings('2018-01-01', '2018-12-31');
-        $originalQuery = new Query($originalRange, $request);
+        $originalQuery = new Query($originalRange, $clientId);
 
         $queryFactory = new QueryFactory($dateRangeFactory);
 
@@ -40,14 +40,14 @@ class QueryFactoryTest extends TestCase
 
         $expectedRange1 = $dateRangeFactory
             ->buildFromStrings('2018-01-01', '2018-07-02');
-        $expectedQueries[] = new Query($expectedRange1, $request);
+        $expectedQueries[] = new Query($expectedRange1, $clientId);
 
         $expectedRange2 = $dateRangeFactory
             ->buildFromStrings('2018-07-03', '2018-12-31');
-        $expectedQueries[] = new Query($expectedRange2, $request);
+        $expectedQueries[] = new Query($expectedRange2, $clientId);
 
         $queriesBuilt = $queryFactory
-            ->buildQueriesSplitting($originalQuery, $request);
+            ->buildQueriesSplitting($originalQuery, $clientId);
 
         $this->assertEquals($expectedQueries, $queriesBuilt);
     }

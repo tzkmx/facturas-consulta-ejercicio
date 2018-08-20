@@ -13,24 +13,20 @@ class QueryFactory
         $this->dateRangeFactory = $factory;
     }
 
-    public function buildInitialQueryFromYear(
-        int $year,
-        RequestForYearInterface $request
-    ) {
+    public function buildInitialQueryFromYear(int $year, string $clientId)
+    {
         $range = $this->dateRangeFactory->buildRangeForYear($year);
-        $query = new Query($range, $request);
+        $query = new Query($range, $clientId);
         return $query;
     }
 
-    public function buildQueriesSplitting(
-        QueryInterface $query,
-        RequestForYearInterface $request
-    ) {
+    public function buildQueriesSplitting(QueryInterface $query, string $clientId)
+    {
         $ranges = $this->dateRangeFactory
             ->buildArrayOfRangesSplitting($query->range());
 
-        return array_map(function ($range) use ($request) {
-            return new Query($range, $request);
+        return array_map(function ($range) use ($clientId) {
+            return new Query($range, $clientId);
         }, $ranges);
     }
 }

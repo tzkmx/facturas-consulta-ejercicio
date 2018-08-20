@@ -17,6 +17,7 @@ class RequestForYear implements RequestForYearInterface
     protected $queryFactory;
 
     private $errorQueries;
+    private $daysOfYear;
 
     private $memoizedCompletionStatus;
 
@@ -28,7 +29,9 @@ class RequestForYear implements RequestForYearInterface
 
         $this->queryFactory = $factory;
 
-        $firstQuery = $this->queryFactory->buildInitialQueryFromYear($year, $this);
+        $firstQuery = $this->queryFactory->buildInitialQueryFromYear($year, $clientId);
+
+        $this->daysOfYear = $firstQuery->range()->getDaysInRange();
 
         $this->queries = [$firstQuery];
         $this->errorQueries = [];
@@ -46,11 +49,23 @@ class RequestForYear implements RequestForYearInterface
     public function isComplete(): bool
     {
         if (is_null($this->memoizedCompletionStatus)) {
-            $invalidQueryFound = array_reduce(
-                $this->queries,
-                [$this, 'aQueryIsInvalid']
-            );
-            $this->memoizedCompletionStatus = !$invalidQueryFound;
+            $validateQueryStatus = $this->validateQueries();
+
+            $invalidQueryFound = $validateQueryStatus['invalidQueryFound'];
+
+            if ($invalidQueryFound) {
+                $this->memoizedCompletionStatus = false;
+                return false;
+            }
+
+            $daysCovered = $validateQueryStatus['daysCovered'];
+
+            if ($this->daysOfYear !== $daysCovered) {
+                $this->memoizedCompletionStatus = false;
+                return false;
+            }
+
+            return true;
         }
 
         return $this->memoizedCompletionStatus;
@@ -66,59 +81,88 @@ class RequestForYear implements RequestForYearInterface
         return $this->errorQueries;
     }
 
-    public function reportQuery(QueryInterface $query)
+    public function updateStatus(): bool
     {
         $this->memoizedCompletionStatus = null;
-        switch (get_class($query->status())) {
 
-            case (QueryStatusRangeExceededThreshold::class):
+        $this->queries = array_reduce(
+            $this->queries,
+            function ($accumulator, QueryInterface $query) {
+                $queryStatusClass = get_class($query->status());
 
-                $newQueries = $this->queryFactory
-                    ->buildQueriesSplitting($query, $this);
+                if ($queryStatusClass === QueryStatusRangeExceededThreshold::class) {
+                    $this->errorQueries[] = $query;
 
-                $this->errorQueries[] = $query;
+                    $newQueries = $this->queryFactory
+                        ->buildQueriesSplitting($query, $this->clientId);
 
-                $this->queries = array_reduce(
-                    $this->queries,
-                    function ($accumulator, $oldQuery) use ($query) {
-                        if ($oldQuery !== $query) {
-                            $accumulator[] = $oldQuery;
-                        }
-                        return $accumulator;
-                    },
-                    $newQueries
-                );
+                    array_push($accumulator, ...$newQueries);
+                    return $accumulator;
+                }
 
-                break;
+                $accumulator[] = $query;
 
-            default:
-                return;
-        }
+                return $accumulator;
+            },
+            []
+        );
+
+        return $this->isComplete();
     }
 
-    private function aQueryIsInvalid($init, QueryInterface $query)
+    private function validateQueries()
     {
-        if ($init) { // ya encontramos consulta incompleta o no válida
-            return true;
-        }
-        if (!$query->status() instanceof QueryStatusResultOk) {
-            return true;
-        }
+        $initialValidStatus = [
+            'invalidQueryFound' => false,
+            'daysCovered' => 0,
+        ];
+
         return array_reduce(
             $this->queries,
-            function ($found, QueryInterface $queryToCompare) use ($query) {
-                if ($found) {
+            function ($statusSoFar, QueryInterface $query) {
+                if ($statusSoFar['invalidQueryFound']) { // ya encontramos consulta incompleta o no válida
+                    return ['invalidQueryFound' => true];
+                }
+
+                if (!$query->status() instanceof QueryStatusResultOk) {
+                    return ['invalidQueryFound' => true];
+                }
+
+                $searchIntersection = $this->lookForIntersectionWithOtherQueries($query);
+
+                $daysCoveredSoFar = $statusSoFar['daysCovered'] ?? 0;
+                $daysCoveredByThisQuery = $query->range()->getDaysInRange();
+
+                return [
+                    'invalidQueryFound' => $searchIntersection,
+                    'daysCovered' => $daysCoveredSoFar + $daysCoveredByThisQuery,
+                ];
+            },
+            $initialValidStatus
+        );
+    }
+
+    private function lookForIntersectionWithOtherQueries(QueryInterface $query)
+    {
+        return array_reduce(
+            $this->queries,
+            function ($foundIntersection, QueryInterface $queryToCompare) use ($query) {
+                if ($foundIntersection) { // ya encontramos intersección
                     return true;
                 }
+
                 $range = $query->range();
+
                 $rangeToCompare = $queryToCompare->range();
+
                 if ($range === $rangeToCompare) {
                     return false;
                 }
                 if ($range->intersects($rangeToCompare)) {
                     return true;
                 }
-            }
+            },
+            false
         );
     }
 }
